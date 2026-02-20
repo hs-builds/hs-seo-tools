@@ -1,0 +1,855 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-hover: #1558b0;
+      --bg-color: #f8f9fa;
+      --surface: #ffffff;
+      --text-main: #202124;
+      --text-sub: #5f6368;
+      --border: #e0e0e0;
+      --border-focus: #1a73e8;
+      --radius: 8px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+      --danger: #d93025;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 16px;
+      font-size: 13px;
+      color: var(--text-main);
+      background-color: var(--bg-color);
+      margin: 0;
+      padding-bottom: 50px;
+    }
+
+    /* Form Elements */
+    label {
+      display: block;
+      font-weight: 500;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    select,
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-family: inherit;
+      background: var(--surface);
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+    }
+
+    /* Buttons */
+    button.primary-btn {
+      width: 100%;
+      background-color: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 8px;
+      transition: background 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    button.primary-btn:hover { background-color: var(--primary-hover); }
+    button.primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-small {
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      background-color: #fff;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-small:hover { background-color: #f1f3f4; }
+
+    .btn-danger {
+      background-color: var(--danger) !important;
+      color: white !important;
+    }
+
+    /* Cards */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Tabs */
+    .mode-switch {
+      display: flex;
+      background: #e8eaed;
+      padding: 4px;
+      border-radius: 10px;
+      margin: 16px 0;
+    }
+    .mode-switch input[type="radio"] { display: none; }
+    .mode-switch label {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      margin: 0;
+      cursor: pointer;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-sub);
+      transition: all 0.2s ease;
+    }
+    .mode-switch input:checked + label {
+      background: #fff;
+      color: var(--primary);
+      font-weight: 600;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Site Dropdown */
+    .site-wrapper { margin-bottom: 16px; }
+    .site-dropdown {
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background-color: var(--surface);
+      cursor: pointer;
+    }
+    .site-dropdown:hover { border-color: #bdc1c6; }
+    .site-dropdown.open { border-color: var(--primary); ring: 2px solid rgba(26,115,232,0.1); }
+    .site-selected {
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+    .site-selected-placeholder { color: var(--text-sub); }
+    .site-arrow {
+      width: 0; height: 0; 
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid var(--text-sub);
+      opacity: 0.7;
+    }
+    .site-panel {
+      position: absolute; left: 0; right: 0; top: 100%;
+      z-index: 999; background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow-md);
+      margin-top: 4px; display: none; overflow: hidden;
+    }
+    .site-dropdown.open .site-panel { display: block; }
+    .site-search-bar input {
+      border: none; border-bottom: 1px solid var(--border);
+      border-radius: 0; margin: 0; padding: 10px 12px;
+    }
+    .site-list { max-height: 200px; overflow-y: auto; }
+    .site-item {
+      padding: 10px 12px; font-size: 13px; cursor: pointer; color: var(--text-main);
+    }
+    .site-item:hover { background-color: #e8f0fe; color: var(--primary); }
+
+    /* Accordion */
+    .accordion-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 12px; background: #f1f3f4; border-radius: 6px;
+      cursor: pointer; font-weight: 500; color: var(--text-main);
+      margin-bottom: 8px; transition: background 0.2s; user-select: none;
+    }
+    .accordion-header:hover { background: #e8eaed; }
+    .accordion-arrow { font-size: 10px; color: var(--text-sub); transition: transform 0.2s ease; }
+    .accordion-content {
+      display: none; grid-template-columns: 1fr 1fr; gap: 8px;
+      margin-bottom: 12px; padding: 4px; animation: fadeIn 0.2s ease-in;
+    }
+    .accordion-content.open { display: grid; }
+    .accordion-header.open .accordion-arrow { transform: rotate(180deg); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Filters */
+    .filters-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 16px; margin-bottom: 8px;
+    }
+    .filter-row {
+      display: flex; gap: 6px; margin-bottom: 8px;
+      background: #fff; border: 1px solid var(--border);
+      padding: 4px; border-radius: 6px;
+    }
+    .filter-row select, .filter-row input {
+      border: none; margin: 0; padding: 6px;
+      font-size: 12px; background: transparent; height: 30px;
+    }
+    .filter-row select { width: 30%; font-weight: 500; }
+    .filter-row input { flex: 1; }
+    .filter-remove {
+      background: none; border: none; color: #999;
+      font-size: 18px; cursor: pointer; padding: 0 8px;
+    }
+    .filter-remove:hover { color: var(--danger); }
+
+    /* Clickable Checkbox Rows */
+    .checkbox-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0;
+      padding: 10px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .checkbox-wrap:hover { background: #f1f3f4; }
+    .checkbox-wrap input { margin: 0; width: auto; cursor: pointer; }
+    .checkbox-wrap span { font-size: 13px; color: var(--text-main); user-select: none; }
+
+    /* Status & Footer */
+    .status { margin-top: 12px; font-size: 12px; line-height: 1.5; }
+    .app-footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #fff; border-top: 1px solid var(--border);
+      padding: 8px; text-align: center; font-size: 11px; color: var(--text-sub);
+    }
+    .app-footer a { color: var(--primary); text-decoration: none; }
+
+    /* Progress Bars */
+    .progress-container {
+      margin-top: 12px; background: #e0e0e0; border-radius: 4px;
+      height: 6px; overflow: hidden; display: none;
+    }
+    .progress-bar { height: 100%; background: var(--primary); width: 0; transition: width 0.3s ease; }
+    .fetch-progress-bar {
+      height: 100%; width: 40%; background: var(--primary);
+      position: relative; animation: indeterminate 1.5s infinite ease-in-out;
+    }
+    @keyframes indeterminate { 0% { left: -40%; } 50% { left: 30%; } 100% { left: 100%; } }
+  </style>
+</head>
+
+<body>
+
+  <div class="site-wrapper">
+    <label>Select Property</label>
+    <div id="siteDropdown" class="site-dropdown">
+      <div id="siteSelected" class="site-selected">
+        <span id="siteSelectedText" class="site-selected-placeholder">Choose GSC Property...</span>
+        <span class="site-arrow"></span>
+      </div>
+      <div id="sitePanel" class="site-panel">
+        <div class="site-search-bar">
+          <input type="text" id="siteSearch" placeholder="Search..." />
+        </div>
+        <div id="siteList" class="site-list"></div>
+      </div>
+    </div>
+    <input type="hidden" id="siteValue" />
+  </div>
+
+  <div class="mode-switch">
+    <input type="radio" id="tab1" name="gscMode" value="kw" checked>
+    <label for="tab1">KW Tracker</label>
+    
+    <input type="radio" id="tab2" name="gscMode" value="url">
+    <label for="tab2">URL Tracker</label>
+    
+    <input type="radio" id="tab3" name="gscMode" value="fetch">
+    <label for="tab3">Fetch Data</label>
+  </div>
+
+  <div id="kwSection" class="section">
+    <label>Target Country</label>
+    <input type="text" id="kwCountry" placeholder="e.g. usa, ind (Optional)" />
+
+    <label class="checkbox-wrap">
+      <input type="checkbox" id="fetchPages" />
+      <span>Fetch ranking URLs</span>
+    </label>
+
+    <label class="checkbox-wrap">
+      <input type="checkbox" id="cannibalReport" />
+      <span>Cannibalization Report</span>
+    </label>
+
+    <button class="primary-btn" onclick="runKwUpdate()">Start Update</button>
+
+    <button class="primary-btn" 
+            style="background:#fff; color:#d93025; border:1px solid #d93025; margin-top:10px;" 
+            onclick="resetSheetContent()">
+      Reset Sheet Content
+    </button>
+
+    <div id="kwProgressWrapper" style="display:none; margin-top:12px;">
+      <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+        <span id="kwProgressText">Starting...</span>
+      </div>
+      <div class="progress-container" style="display:block;">
+        <div id="kwProgressBar" class="progress-bar"></div>
+      </div>
+    </div>
+    <div id="kwStatus" class="status"></div>
+    <button id="stopBtn" class="primary-btn btn-danger" onclick="stopKwUpdateUI()" style="display:none; margin-top:8px;">Stop Updating</button>
+  </div>
+
+  <div id="urlSection" class="section" style="display:none;">
+    <label>Target Country</label>
+    <input type="text" id="urlCountry" placeholder="e.g. ind, usa (Optional)" />
+
+    <label>Date Range</label>
+    <select id="urlDateRange" onchange="toggleUrlCustomDates()">
+      <option value="28d" selected>Last 28 days</option>
+      <option value="7d">Last 7 days</option>
+      <option value="30d">Last 30 days</option>
+      <option value="90d">Last 90 days</option>
+      <option value="180d">Last 6 months</option>
+      <option value="365d">Last 12 months</option>
+      <option value="all">All time</option>
+      <option value="custom">Custom Date...</option>
+    </select>
+
+    <div id="urlCustomDates" style="display:none; background:#f1f3f4; padding:10px; border-radius:8px; margin-bottom:12px;">
+      <label>Start Date</label>
+      <input type="date" id="urlCustomStart" style="margin-bottom:8px;"/>
+      <label>End Date</label>
+      <input type="date" id="urlCustomEnd" style="margin-bottom:0;"/>
+    </div>
+
+    <label>Search Type</label>
+    <select id="urlSearchType">
+      <option value="web" selected>Web</option>
+      <option value="image">Image</option>
+      <option value="video">Video</option>
+      <option value="news">News</option>
+      <option value="googleNews">Google News</option>
+      <option value="discover">Discover</option>
+    </select>
+
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <button class="primary-btn" onclick="runUrlUpdate()">Update</button>
+      <button class="primary-btn" style="background:#fff; color:#5f6368; border:1px solid #dadce0;" onclick="resetUrlTrackerUI()">Reset</button>
+    </div>
+    <div id="urlStatus" class="status"></div>
+  </div>
+
+
+  <div id="fetchSection" class="section" style="display:none;">
+    <label>Search Type</label>
+    <select id="searchType">
+      <option value="web">Web</option>
+      <option value="image">Image</option>
+      <option value="video">Video</option>
+      <option value="news">News</option>
+      <option value="googleNews">Google News</option>
+      <option value="discover">Discover</option>
+    </select>
+
+    <label>Date Range</label>
+    <select id="dateRange" onchange="toggleCustomDates()">
+      <option value="28d">Last 28 days</option>
+      <option value="7d">Last 7 days</option>
+      <option value="30d">Last 30 days</option>
+      <option value="90d">Last 90 days</option>
+      <option value="365d">Last 365 days</option>
+      <option value="all">All time</option>
+      <option value="custom">Custom Date...</option>
+    </select>
+
+    <div id="customDates" style="display:none; background:#f1f3f4; padding:10px; border-radius:8px; margin-bottom:12px;">
+      <input type="date" id="customStart" style="margin-bottom:8px;"/>
+      <input type="date" id="customEnd" style="margin-bottom:0;"/>
+    </div>
+
+    <div class="accordion-header" onclick="toggleDimensions()">
+      <span>Dimensions (Group By)</span>
+      <span id="dimArrow" class="accordion-arrow">▼</span>
+    </div>
+
+    <div id="groupByContainer" class="accordion-content">
+      <label class="checkbox-wrap" style="margin:0; padding:6px;">
+        <input type="checkbox" value="date"> <span>Date</span>
+      </label>
+      <label class="checkbox-wrap" style="margin:0; padding:6px;">
+        <input type="checkbox" value="query"> <span>Query</span>
+      </label>
+      <label class="checkbox-wrap" style="margin:0; padding:6px;">
+        <input type="checkbox" value="page"> <span>Page</span>
+      </label>
+      <label class="checkbox-wrap" style="margin:0; padding:6px;">
+        <input type="checkbox" value="country"> <span>Country</span>
+      </label>
+      <label class="checkbox-wrap" style="margin:0; padding:6px;">
+        <input type="checkbox" value="device"> <span>Device</span>
+      </label>
+      <label class="checkbox-wrap" style="margin:0; padding:6px;">
+        <input type="checkbox" value="searchAppearance"> <span>Appearance</span>
+      </label>
+    </div>
+
+    <div class="filters-header">
+      <span style="font-weight:600; font-size:12px;">Filters</span>
+      <button type="button" class="btn-small" onclick="addFilterRow()">+ Add</button>
+    </div>
+
+    <div style="background:#f1f3f4; padding:8px; border-radius:6px; margin-bottom:8px;">
+      <div style="display:flex; gap:6px; align-items:center;">
+        <select id="presetRegex" style="margin:0; height:auto; padding:6px; font-size:12px;">
+          <option value="">Quick Presets...</option>
+          <option value="5plus">Long-tail (5+ words)</option>
+          <option value="nonenglish">Non-English chars</option>
+          <option value="howto">How-to</option>
+          <option value="questions">Questions</option>
+          <option value="commercial">Commercial/Transactional</option>
+          <option value="comparison">Comparison/Alternatives</option>
+          <option value="local">Local Intent</option>
+          <option value="freshness">Freshness/Dates</option>
+        </select>
+        <button type="button" class="btn-small" style="height:32px;" onclick="applyPresetRegex()">Apply</button>
+      </div>
+    </div>
+
+    <div id="filtersContainer"></div>
+
+    <button id="fetchBtn" class="primary-btn" onclick="runAdvancedFetch()">Fetch Data</button>
+
+    <div id="fetchProgressWrapper" style="display:none; margin-top:12px;">
+      <div id="fetchProgressText" style="font-size:11px; margin-bottom:4px;">Fetching...</div>
+      <div class="progress-container" style="display:block;">
+        <div class="fetch-progress-bar"></div>
+      </div>
+    </div>
+    <div id="fetchStatus" class="status"></div>
+  </div>
+
+  <button id="clearToolBtn" class="primary-btn" 
+          style="background:#fff; color:#202124; border:1px solid #dadce0; margin-top:16px; display:none;"
+          onclick="resetToolUI()">
+    Start Over / Reset Form
+  </button>
+
+  <div class="app-footer">
+    Made with ❤️ by <a href="https://www.linkedin.com/in/shah-harsh02/" target="_blank">HarsH</a>
+  </div>
+
+<script>
+let ALL_SITES = [];
+let dropdownOpen = false;
+let kwProgressTimer = null;
+let SITES_LOADED = false;
+let SITES_LOADING = false;
+
+// Accordion Toggle
+function toggleDimensions() {
+  const content = document.getElementById('groupByContainer');
+  const header = document.querySelector('.accordion-header');
+  content.classList.toggle('open');
+  header.classList.toggle('open');
+}
+
+// === NEW REGEX PRESETS ADDED HERE ===
+const PRESET_REGEX = {
+  "5plus": "(\\S+\\s+){4,}\\S+",
+  "nonenglish": ".*[^\\x00-\\x7F].*",
+  "howto": "^how to\\b",
+  "questions": "^(who|what|when|where|why|how|which)\\b",
+  "commercial": "\\b(best|top|vs|review|reviews|comparison|compare|pricing|cost)\\b",
+  "comparison": "\\b(vs|versus|alternative|alternatives|competitor|similar to)\\b",
+  "local": "\\b(near me|nearby|in [a-zA-Z\\s]+)\\b",
+  "freshness": "\\b(latest|new|202[0-9]|update|updated)\\b"
+};
+
+function applyPresetRegex() {
+  const key = document.getElementById('presetRegex').value;
+  if (!key) return; 
+  const rx = PRESET_REGEX[key];
+  addFilterRow({ dimension: "query", operator: "includingRegex", expression: rx });
+}
+
+function showClearButton() {
+  const btn = document.getElementById('clearToolBtn');
+  if (btn) btn.style.display = 'block';
+}
+function hideClearButton() {
+  const btn = document.getElementById('clearToolBtn');
+  if (btn) btn.style.display = 'none';
+}
+
+// --- Sites ---
+function loadSites_() {
+  if (SITES_LOADING) return;
+  SITES_LOADING = true;
+  const listEl = document.getElementById('siteList');
+  if (listEl) listEl.innerHTML = '<div class="site-item" style="color:#999;">Loading...</div>';
+
+  google.script.run
+    .withSuccessHandler(list => {
+      ALL_SITES = list || [];
+      SITES_LOADED = true;
+      SITES_LOADING = false;
+      renderSiteList(document.getElementById('siteSearch').value || '');
+    })
+    .withFailureHandler(err => {
+      SITES_LOADED = false;
+      SITES_LOADING = false;
+      if (listEl) listEl.innerHTML = '<div class="site-item" style="color:#d93025;">Error loading sites</div>';
+    })
+    .getGscSites();
+}
+
+window.addEventListener('DOMContentLoaded', () => { loadSites_(); });
+
+function renderSiteList(filterText) {
+  const listEl = document.getElementById('siteList');
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  const t = (filterText || '').toLowerCase();
+  const filtered = ALL_SITES.filter(s => !t || (s.siteUrl || '').toLowerCase().includes(t));
+
+  if (!filtered.length) {
+    listEl.innerHTML = '<div class="site-item" style="color:#999;">No matches</div>';
+    return;
+  }
+  filtered.forEach(s => {
+    const item = document.createElement('div');
+    item.className = 'site-item';
+    item.textContent = s.siteUrl;
+    item.onclick = () => selectSite(s.siteUrl);
+    listEl.appendChild(item);
+  });
+}
+
+function selectSite(v) {
+  document.getElementById('siteValue').value = v;
+  const t = document.getElementById('siteSelectedText');
+  t.textContent = v;
+  t.classList.remove('site-selected-placeholder');
+  t.style.color = '#202124';
+  closeDropdown();
+}
+
+function openDropdown() {
+  document.getElementById('siteDropdown').classList.add('open');
+  dropdownOpen = true;
+  document.getElementById('siteSearch').focus();
+  if (!SITES_LOADED && !SITES_LOADING) loadSites_();
+}
+
+function closeDropdown() {
+  document.getElementById('siteDropdown').classList.remove('open');
+  dropdownOpen = false;
+}
+
+document.getElementById('siteSelected').onclick = function(e) { e.stopPropagation(); dropdownOpen ? closeDropdown() : openDropdown(); };
+document.getElementById('siteSearch').oninput = function(e) { renderSiteList(e.target.value); };
+document.addEventListener('click', e => { if (dropdownOpen && !document.getElementById('siteDropdown').contains(e.target)) closeDropdown(); });
+
+// --- Tabs ---
+Array.from(document.getElementsByName('gscMode')).forEach(r => {
+  r.onchange = () => {
+    const m = document.querySelector('input[name="gscMode"]:checked').value;
+    document.getElementById('kwSection').style.display = m === 'kw' ? '' : 'none';
+    document.getElementById('urlSection').style.display = m === 'url' ? '' : 'none';
+    document.getElementById('fetchSection').style.display = m === 'fetch' ? '' : 'none';
+  };
+});
+
+// --- Logic Helpers ---
+function toggleUrlCustomDates() {
+  const k = document.getElementById('urlDateRange').value;
+  document.getElementById('urlCustomDates').style.display = k === 'custom' ? 'block' : 'none';
+}
+function toggleCustomDates() {
+  const k = document.getElementById('dateRange').value;
+  document.getElementById('customDates').style.display = k === 'custom' ? 'block' : 'none';
+}
+
+function resetUrlTrackerUI() {
+  document.getElementById('urlCountry').value = '';
+  document.getElementById('urlDateRange').value = '28d';
+  document.getElementById('urlSearchType').value = 'web';
+  document.getElementById('urlCustomDates').style.display = 'none';
+  document.getElementById('urlCustomStart').value = '';
+  document.getElementById('urlCustomEnd').value = '';
+  document.getElementById('urlStatus').innerHTML = '';
+}
+
+function addFilterRow(preset) {
+  const all = ["query", "page", "country", "device"];
+  const used = [...document.querySelectorAll('.filter-dim')].map(s => s.value);
+  const avail = all.filter(d => !used.includes(d));
+  const cont = document.getElementById('filtersContainer');
+  const row = document.createElement('div');
+  row.className = 'filter-row';
+  const presetDim = preset && preset.dimension ? preset.dimension : null;
+  const presetOp  = preset && preset.operator ? preset.operator : "contains";
+  const presetVal = preset && preset.expression ? preset.expression : "";
+  const dimsForThisRow = presetDim ? all : avail;
+
+  if (!dimsForThisRow.length) return alert("All dimensions used");
+
+  let opts = '';
+  dimsForThisRow.forEach(d => {
+    const selected = (d === (presetDim || dimsForThisRow[0])) ? ' selected' : '';
+    opts += `<option value="${d}"${selected}>${d}</option>`;
+  });
+
+  row.innerHTML =
+    `<select class="filter-dim">${opts}</select>` +
+    `<select class="filter-op">` +
+      `<option value="contains">Containing</option>` +
+      `<option value="notContains">Not containing</option>` +
+      `<option value="equals">Exact</option>` +
+      `<option value="includingRegex">Matches regex</option>` +
+      `<option value="excludingRegex">Doesn't match regex</option>` +
+    `</select>` +
+    `<input type="text" class="filter-val" placeholder="Value" />` +
+    `<button type="button" class="filter-remove">×</button>`;
+
+  cont.appendChild(row);
+  row.querySelector('.filter-op').value = presetOp;
+  row.querySelector('.filter-val').value = presetVal;
+  row.querySelector('.filter-remove').onclick = () => row.remove();
+}
+
+function collectFilters() {
+  const rows = document.querySelectorAll('.filter-row');
+  const arr = [];
+  rows.forEach(r => {
+    const v = r.querySelector('.filter-val').value.trim();
+    if (v) arr.push({ dimension: r.querySelector('.filter-dim').value, operator: r.querySelector('.filter-op').value, expression: v });
+  });
+  return arr;
+}
+
+function formatETA(ms) {
+  if (!ms || ms <= 0) return '';
+  let sec = Math.ceil(ms / 1000);
+  const h = Math.floor(sec / 3600);
+  sec %= 3600;
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return (h > 0) ? `${h}h ${m}m remaining` : `${m}m ${s}s remaining`;
+}
+
+// --- Run Functions ---
+function runKwUpdate() {
+  hideClearButton();
+  const stopBtn = document.getElementById('stopBtn');
+  const siteUrl = document.getElementById('siteValue').value;
+  const country = document.getElementById('kwCountry').value;
+  const fetchPages = document.getElementById('fetchPages').checked;
+  const cannibalReport = document.getElementById('cannibalReport').checked;
+
+  if (!siteUrl) return alert("Please select a GSC property.");
+
+  document.getElementById('kwStatus').innerHTML = '';
+  document.getElementById('kwProgressWrapper').style.display = 'block';
+  document.getElementById('kwProgressBar').style.width = '5%';
+  document.getElementById('kwProgressText').textContent = 'Starting...';
+
+  stopBtn.style.display = 'block';
+  stopBtn.disabled = false;
+  stopBtn.textContent = "Stop Updating";
+
+  if (kwProgressTimer) clearInterval(kwProgressTimer);
+  kwProgressTimer = setInterval(pollKwProgress, 1500);
+
+  google.script.run
+    .withSuccessHandler(msg => completeKwUpdateUI(msg, 'green'))
+    .withFailureHandler(err => completeKwUpdateUI(err.message || err, 'red'))
+    .fetchGscKeywordRanksFromUI({ siteUrl, country, fetchPages, cannibalReport });
+}
+
+// --- NEW FUNCTION: Reset Sheet Content ---
+function resetSheetContent() {
+  if (!confirm("Are you sure? This will clear all data and formatting in the active sheet (except the header row).")) return;
+  
+  const btn = event.target;
+  const originalText = btn.textContent;
+  btn.textContent = "Clearing...";
+  btn.disabled = true;
+
+  google.script.run
+    .withSuccessHandler(() => {
+       btn.textContent = originalText;
+       btn.disabled = false;
+       document.getElementById('kwStatus').innerHTML = '<p style="color:green; line-height: 1.6; margin: 0;">Sheet cleared successfully.</p>';
+    })
+    .withFailureHandler(err => {
+       btn.textContent = originalText;
+       btn.disabled = false;
+       document.getElementById('kwStatus').innerHTML = '<p style="color:red; line-height: 1.6; margin: 0;">Error: ' + err.message + '</p>';
+    })
+    .clearActiveSheetExceptHeader(); // CALLS THE SERVER SIDE FUNCTION
+}
+
+function pollKwProgress() { google.script.run.withSuccessHandler(updateKwProgressUI).getKwProgress(); }
+
+function updateKwProgressUI(p) {
+  if (!p) return;
+  const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+  const bar = document.getElementById('kwProgressBar');
+  const txt = document.getElementById('kwProgressText');
+  if (bar) bar.style.width = pct + '%';
+  if (p.status === 'running') {
+    const avgMs = p.done ? (p.elapsedMs / p.done) : 0;
+    const remaining = p.total - p.done;
+    const etaMs = Math.round(avgMs * remaining);
+    txt.innerHTML = `Updating... ${p.done} / ${p.total} (${pct}%) - ETA: ${formatETA(etaMs)}`;
+  }
+  if (p.status === 'stopped' || p.status === 'done') {
+    clearInterval(kwProgressTimer); kwProgressTimer = null;
+    document.getElementById('stopBtn').style.display = 'none';
+    if (p.status === 'stopped') {
+        txt.textContent = "Update stopped.";
+        document.getElementById('kwStatus').innerHTML = '<p style="color:#d93025;">Stopped by user.</p>';
+        showClearButton();
+    }
+  }
+}
+
+function completeKwUpdateUI(msg, color) {
+  if (kwProgressTimer) { clearInterval(kwProgressTimer); kwProgressTimer = null; }
+  document.getElementById('kwProgressWrapper').style.display = 'none';
+  document.getElementById('stopBtn').style.display = 'none';
+  
+  // FIX: Replace newlines with <br> for vertical listing
+  let htmlMsg = msg.replace(/\n/g, '<br>');
+  
+  document.getElementById('kwStatus').innerHTML = 
+    `<p style="color:${color}; line-height: 1.6; margin: 0;">${htmlMsg}</p>`;
+  
+  showClearButton();
+}
+
+function stopKwUpdateUI() {
+  const btn = document.getElementById('stopBtn');
+  btn.disabled = true; btn.textContent = "Stopping...";
+  if (kwProgressTimer) { clearInterval(kwProgressTimer); kwProgressTimer = null; }
+  google.script.run.withSuccessHandler(() => {
+       document.getElementById('kwProgressWrapper').style.display = 'none';
+       document.getElementById('kwStatus').innerHTML = '<p style="color:#d93025;">Process Stopped.</p>';
+       btn.style.display = 'none';
+       showClearButton();
+    }).stopKwUpdate();
+}
+
+function runUrlUpdate() {
+  const siteUrl = document.getElementById('siteValue').value;
+  if (!siteUrl) return alert("Please select a GSC property first.");
+  const dateRange = document.getElementById('urlDateRange').value;
+  const startDate = document.getElementById('urlCustomStart').value;
+  const endDate = document.getElementById('urlCustomEnd').value;
+  const searchType = document.getElementById('urlSearchType').value;
+  const country = (document.getElementById('urlCountry').value || "").trim();
+
+  document.getElementById('urlStatus').innerHTML = '<p style="color:#5f6368;">Updating...</p>';
+  google.script.run
+    .withSuccessHandler(msg => { 
+        let htmlMsg = msg.replace(/\n/g, '<br>');
+        document.getElementById('urlStatus').innerHTML = 
+          `<p style="color:green; line-height: 1.6; margin: 0;">${htmlMsg}</p>`;
+    })
+    .withFailureHandler(err => { 
+        document.getElementById('urlStatus').innerHTML = 
+          '<p style="color:red;">' + (err.message || err) + '</p>'; 
+    })
+    .fetchGscUrlMetricsFromUI({ siteUrl, dateRange, startDate, endDate, searchType, country });
+}
+
+function runAdvancedFetch() {
+  hideClearButton();
+  const siteUrl = document.getElementById('siteValue').value;
+  if (!siteUrl) return alert("Select a GSC property.");
+  const searchType = document.getElementById('searchType').value;
+  const dateRange = document.getElementById('dateRange').value;
+  const startDate = document.getElementById('customStart').value;
+  const endDate = document.getElementById('customEnd').value;
+  const checks = document.querySelectorAll('#groupByContainer input[type="checkbox"]');
+  const groupBy = [...checks].filter(c => c.checked).map(c => c.value);
+  const filters = collectFilters();
+  const statusEl = document.getElementById('fetchStatus');
+  const progWrap = document.getElementById('fetchProgressWrapper');
+  const btn = document.getElementById('fetchBtn');
+
+  statusEl.innerHTML = '';
+  progWrap.style.display = 'block';
+  document.getElementById('fetchProgressText').textContent = 'Fetching data...';
+  if (btn) btn.disabled = true;
+
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      google.script.run
+        .withSuccessHandler(msg => {
+          progWrap.style.display = 'none'; if (btn) btn.disabled = false;
+          statusEl.innerHTML = '<p style="color:green;">' + msg + '</p>';
+          showClearButton();
+        })
+        .withFailureHandler(err => {
+          progWrap.style.display = 'none'; if (btn) btn.disabled = false;
+          statusEl.innerHTML = '<p style="color:red;">' + (err.message || err) + '</p>';
+          showClearButton();
+        })
+        .runAdvancedFetchFromUI({ siteUrl, searchType, dateRange, startDate, endDate, groupBy, filters });
+    }, 0);
+  });
+}
+
+function resetToolUI() {
+  document.getElementById('siteValue').value = '';
+  const siteText = document.getElementById('siteSelectedText');
+  siteText.textContent = 'Choose GSC Property...';
+  siteText.classList.add('site-selected-placeholder');
+  document.getElementById('tab1').checked = true;
+  document.getElementById('kwSection').style.display = '';
+  document.getElementById('urlSection').style.display = 'none';
+  document.getElementById('fetchSection').style.display = 'none';
+  document.getElementById('kwCountry').value = '';
+  document.getElementById('fetchPages').checked = false;
+  document.getElementById('cannibalReport').checked = false;
+  resetUrlTrackerUI();
+  document.getElementById('searchType').value = 'web';
+  document.getElementById('dateRange').value = '28d';
+  document.getElementById('customDates').style.display = 'none';
+  document.getElementById('customStart').value = '';
+  document.getElementById('customEnd').value = '';
+  document.querySelectorAll('#groupByContainer input').forEach(c => c.checked = false);
+  document.getElementById('presetRegex').value = '';
+  document.getElementById('filtersContainer').innerHTML = '';
+  document.getElementById('groupByContainer').classList.remove('open');
+  document.querySelector('.accordion-header').classList.remove('open');
+  document.getElementById('kwStatus').innerHTML = '';
+  document.getElementById('fetchStatus').innerHTML = '';
+  document.getElementById('urlStatus').innerHTML = '';
+  if (kwProgressTimer) clearInterval(kwProgressTimer);
+  hideClearButton();
+}
+</script>
+</body>
+</html>

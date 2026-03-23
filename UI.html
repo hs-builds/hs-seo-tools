@@ -1,31 +1,54 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #1a73e8;
-      --primary-hover: #1558b0;
-      --bg-color: #f8f9fa;
+      --primary: #000000;
+      --primary-hover: #333333;
+      --bg-color: #ffffff;
       --surface: #ffffff;
-      --text-main: #202124;
-      --text-sub: #5f6368;
-      --border: #e0e0e0;
-      --border-focus: #1a73e8;
-      --radius: 8px;
-      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-      --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
-      --danger: #d93025;
+      --text-main: #000000;
+      --text-sub: #555555;
+      --border: #000000;
+      --border-focus: #000000;
+      --radius: 0px;
+      --shadow-sm: none;
+      --shadow-md: none;
+      --danger: #000000;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      position: relative;
     }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      padding: 16px;
+      font-family: 'Figtree', -apple-system, BlinkMacSystemFont, sans-serif;
       font-size: 13px;
       color: var(--text-main);
       background-color: var(--bg-color);
-      margin: 0;
-      padding-bottom: 50px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    #mainContent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 33px;
+      padding: 16px;
+      padding-bottom: 12px;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    #kwSection, #urlSection, #fetchSection {
+      max-height: calc(100vh - 220px);
+      overflow-y: auto;
     }
 
     /* Form Elements */
@@ -39,7 +62,9 @@
 
     select,
     input[type="text"],
-    input[type="date"] {
+    input[type="number"],
+    input[type="date"],
+    input[type="month"] {
       width: 100%;
       box-sizing: border-box;
       padding: 10px 12px;
@@ -51,19 +76,25 @@
       background: var(--surface);
       transition: all 0.2s ease;
       outline: none;
+      appearance: auto;
     }
+
+    /* Remove number input spinners */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 
     select:focus, input:focus {
       border-color: var(--border-focus);
-      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
     }
 
     /* Buttons */
     button.primary-btn {
       width: 100%;
-      background-color: var(--primary);
+      background-color: #000;
       color: #fff;
-      border: none;
+      border: 1px solid #000;
       padding: 12px;
       border-radius: var(--radius);
       cursor: pointer;
@@ -71,34 +102,36 @@
       font-weight: 600;
       margin-top: 8px;
       transition: background 0.2s;
-      box-shadow: var(--shadow-sm);
+      box-shadow: none;
     }
 
-    button.primary-btn:hover { background-color: var(--primary-hover); }
-    button.primary-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    button.primary-btn:hover { background-color: #333; }
+    button.primary-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     .btn-small {
       padding: 6px 10px;
       font-size: 11px;
       font-weight: 500;
       background-color: #fff;
-      color: var(--text-main);
-      border: 1px solid var(--border);
-      border-radius: 4px;
+      color: #000;
+      border: 1px solid #000;
+      border-radius: 0;
       cursor: pointer;
     }
     .btn-small:hover { background-color: #f1f3f4; }
+    .btn-reset-sheet:hover { background-color: #cc0000 !important; color: #fff !important; border-color: #cc0000 !important; }
 
     .btn-danger {
-      background-color: var(--danger) !important;
+      background-color: #000 !important;
       color: white !important;
+      border: 1px solid #000 !important;
     }
 
     /* Cards */
     .section {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 0;
       padding: 16px;
       margin-top: 16px;
       box-shadow: var(--shadow-sm);
@@ -107,10 +140,10 @@
     /* Tabs */
     .mode-switch {
       display: flex;
-      background: #e8eaed;
-      padding: 4px;
-      border-radius: 10px;
-      margin: 16px 0;
+      background: transparent;
+      padding: 0;
+      margin: 16px 0 0 0;
+      border-bottom: 1px solid #000;
     }
     .mode-switch input[type="radio"] { display: none; }
     .mode-switch label {
@@ -119,17 +152,21 @@
       padding: 8px;
       margin: 0;
       cursor: pointer;
-      border-radius: 7px;
       font-size: 12px;
       font-weight: 500;
       color: var(--text-sub);
       transition: all 0.2s ease;
+      border: none;
+      background: transparent;
+      position: relative;
     }
     .mode-switch input:checked + label {
-      background: #fff;
-      color: var(--primary);
+      background: transparent;
+      color: #000;
       font-weight: 600;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      box-shadow: none;
+      border: none;
+      border-bottom: 2px solid #000;
     }
 
     /* Site Dropdown */
@@ -162,11 +199,20 @@
       position: absolute; left: 0; right: 0; top: 100%;
       z-index: 999; background: #fff;
       border: 1px solid var(--border);
-      border-radius: 8px;
-      box-shadow: var(--shadow-md);
-      margin-top: 4px; display: none; overflow: hidden;
+      border-radius: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-top: 2px;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
     }
-    .site-dropdown.open .site-panel { display: block; }
+    .site-dropdown.open .site-panel {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
     .site-search-bar input {
       border: none; border-bottom: 1px solid var(--border);
       border-radius: 0; margin: 0; padding: 10px 12px;
@@ -175,24 +221,34 @@
     .site-item {
       padding: 10px 12px; font-size: 13px; cursor: pointer; color: var(--text-main);
     }
-    .site-item:hover { background-color: #e8f0fe; color: var(--primary); }
+    .site-item:hover { background-color: #f0f0f0; color: #000; }
 
     /* Accordion */
     .accordion-header {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 12px; background: #f1f3f4; border-radius: 6px;
+      padding: 10px 12px; background: #f5f5f5; border-radius: 0;
       cursor: pointer; font-weight: 500; color: var(--text-main);
       margin-bottom: 8px; transition: background 0.2s; user-select: none;
+      border: 1px solid #000;
     }
-    .accordion-header:hover { background: #e8eaed; }
+    .accordion-header:hover { background: #e8e8e8; }
     .accordion-arrow { font-size: 10px; color: var(--text-sub); transition: transform 0.2s ease; }
     .accordion-content {
-      display: none; grid-template-columns: 1fr 1fr; gap: 8px;
-      margin-bottom: 12px; padding: 4px; animation: fadeIn 0.2s ease-in;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 4px;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.2s ease, opacity 0.2s ease;
     }
-    .accordion-content.open { display: grid; }
+    .accordion-content.open {
+      max-height: 300px;
+      opacity: 1;
+    }
     .accordion-header.open .accordion-arrow { transform: rotate(180deg); }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
     /* Filters */
     .filters-header {
@@ -202,7 +258,7 @@
     .filter-row {
       display: flex; gap: 6px; margin-bottom: 8px;
       background: #fff; border: 1px solid var(--border);
-      padding: 4px; border-radius: 6px;
+      padding: 4px; border-radius: 0;
     }
     .filter-row select, .filter-row input {
       border: none; margin: 0; padding: 6px;
@@ -223,41 +279,284 @@
       gap: 10px;
       margin: 8px 0;
       padding: 10px 8px;
-      border-radius: 6px;
+      border-radius: 0;
       cursor: pointer;
       transition: background 0.2s;
     }
-    .checkbox-wrap:hover { background: #f1f3f4; }
+    .checkbox-wrap:hover { background: #f5f5f5; }
     .checkbox-wrap input { margin: 0; width: auto; cursor: pointer; }
     .checkbox-wrap span { font-size: 13px; color: var(--text-main); user-select: none; }
 
-    /* Status & Footer */
-    .status { margin-top: 12px; font-size: 12px; line-height: 1.5; }
-    .app-footer {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: #fff; border-top: 1px solid var(--border);
-      padding: 8px; text-align: center; font-size: 11px; color: var(--text-sub);
+    /* Month Selection - NEW */
+    .month-selector {
+      background: #fafafa;
+      border: 1px solid #000;
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 12px;
     }
-    .app-footer a { color: var(--primary); text-decoration: none; }
+    
+    .month-selector-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .month-selector-header label {
+      margin: 0;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    
+    .month-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    
+    .month-pill {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 0;
+      padding: 4px 10px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .month-pill-remove {
+      cursor: pointer;
+      color: #999;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    .month-pill-remove:hover {
+      color: var(--danger);
+    }
+    
+    
+    .month-add-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: stretch;
+      flex-wrap: wrap;
+    }
+
+    .month-range {
+      display: flex;
+      gap: 8px;
+      flex: 1 1 260px;
+      flex-wrap: wrap;
+      min-width: 220px;
+    }
+
+    .month-range-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1 1 120px;
+      min-width: 120px;
+    }
+
+    .month-range-label {
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    .month-add-row input[type="month"] {
+      width: 100%;
+      margin: 0;
+    }
+
+    .month-add-row button {
+      padding: 8px 16px;
+      background: #000;
+      color: white;
+      border: 1px solid #000;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    .month-add-row button:hover {
+      background: #333;
+    }
+
+    
+    @media (max-width: 420px) {
+      .month-add-row {
+        flex-direction: column;
+      }
+      .month-range {
+        width: 100%;
+      }
+      .month-add-row button {
+        width: 100%;
+      }
+    }
+
+/* Status & Footer */
+    .status { margin-top: 12px; font-size: 12px; line-height: 1.5; }
+
+    /* Keyword Input Modal */
+    .kw-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    .kw-modal-overlay.open { display: flex; }
+    .kw-modal {
+      background: #fff;
+      border: 1px solid #000;
+      width: calc(100% - 32px);
+      max-width: 340px;
+      padding: 16px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .kw-modal-title {
+      font-weight: 600;
+      font-size: 13px;
+      color: #000;
+      margin: 0;
+    }
+    .kw-modal-hint {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin: 0;
+    }
+    .kw-modal textarea {
+      width: 100%;
+      box-sizing: border-box;
+      height: 180px;
+      border: 1px solid #000;
+      border-radius: 0;
+      padding: 10px;
+      font-size: 13px;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+    }
+    .kw-modal textarea:focus {
+      box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
+    }
+    .kw-modal-counter {
+      font-size: 11px;
+      color: var(--text-sub);
+      text-align: right;
+      margin: 0;
+    }
+    .kw-modal-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .kw-modal-actions button {
+      flex: 1;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid #000;
+      cursor: pointer;
+      border-radius: 0;
+    }
+    .kw-modal-actions .btn-cancel {
+      background: #fff;
+      color: #000;
+    }
+    .kw-modal-actions .btn-cancel:hover { background: #f5f5f5; }
+    .kw-modal-actions .btn-add-kw {
+      background: #000;
+      color: #fff;
+    }
+    .kw-modal-actions .btn-add-kw:hover { background: #333; }
+    .app-footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 33px;
+      background: #fff;
+      border-top: 1px solid #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--text-sub);
+      box-sizing: border-box;
+      z-index: 999;
+    }
+    .app-footer a { color: #000; text-decoration: none; font-weight: 500; }
+    .app-footer a:hover { text-decoration: underline; }
 
     /* Progress Bars */
     .progress-container {
-      margin-top: 12px; background: #e0e0e0; border-radius: 4px;
+      margin-top: 12px; background: #e0e0e0; border-radius: 0;
       height: 6px; overflow: hidden; display: none;
     }
-    .progress-bar { height: 100%; background: var(--primary); width: 0; transition: width 0.3s ease; }
+    .progress-bar { height: 100%; background: #000; width: 0; transition: width 0.3s ease; }
     .fetch-progress-bar {
-      height: 100%; width: 40%; background: var(--primary);
+      height: 100%; width: 40%; background: #000;
       position: relative; animation: indeterminate 1.5s infinite ease-in-out;
     }
     @keyframes indeterminate { 0% { left: -40%; } 50% { left: 30%; } 100% { left: 100%; } }
+  
+    /* Collapsible details/summary */
+    details.collapsible summary {
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 12px;
+      color: var(--text-sub);
+      padding: 8px 0;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e0e0e0;
+      user-select: none;
+    }
+    details.collapsible summary::-webkit-details-marker { display: none; }
+    details.collapsible summary::after {
+      content: '▼';
+      font-size: 9px;
+      color: var(--text-sub);
+      transition: transform 0.2s ease;
+    }
+    details.collapsible[open] summary::after {
+      transform: rotate(180deg);
+    }
+    details.collapsible .metric-grid {
+      animation: slideDown 0.15s ease;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 
 <body>
+<div id="mainContent">
 
   <div class="site-wrapper">
-    <label>Select Property</label>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+      <label style="margin:0;">Select Property</label>
+      <div style="display:flex; gap:6px;">
+        <button class="btn-small" id="refreshSitesBtn" onclick="refreshSitesList()" title="Reload GSC properties" style="font-size:11px; padding:4px 8px;">↻ Refresh</button>
+        <button class="btn-small btn-reset-sheet" onclick="resetSheetContent()" style="font-size:11px; padding:4px 10px;">Reset Sheet</button>
+      </div>
+    </div>
     <div id="siteDropdown" class="site-dropdown">
       <div id="siteSelected" class="site-selected">
         <span id="siteSelectedText" class="site-selected-placeholder">Choose GSC Property...</span>
@@ -285,6 +584,55 @@
   </div>
 
   <div id="kwSection" class="section">
+
+    <!-- DATE RANGE -->
+    <div class="month-selector">
+      <div class="month-selector-header">
+        <label>Date Range</label>
+      </div>
+      <select id="kwDateRangeMode">
+        <option value="last_7" selected>Last 7 days</option>
+        <option value="last_28">Last 28 days</option>
+        <option value="last_30">Last 30 days</option>
+        <option value="last_90">Last 90 days</option>
+        <option value="last_6m">Last 6 months</option>
+        <option value="last_12m">Last 12 months</option>
+        <option value="all_time">All time (GSC ~16 months)</option>
+        <option value="custom_date">Custom Date</option>
+        <option value="custom_month">Custom Month</option>
+      </select>
+      <div id="kwCustomDateFields" style="display:none; margin-top:10px;">
+        <div style="margin-bottom:10px;">
+          <span class="month-range-label">Start Date</span>
+          <input type="date" id="kwStartDate" />
+        </div>
+        <div>
+          <span class="month-range-label">End Date</span>
+          <input type="date" id="kwEndDate" />
+        </div>
+      </div>
+      <div id="kwCustomMonthFields" style="display:none; margin-top:10px;">
+        <div style="margin-bottom:10px;">
+          <span class="month-range-label">Start Month</span>
+          <input type="month" id="kwStartMonth" />
+        </div>
+        <div>
+          <span class="month-range-label">End Month</span>
+          <input type="month" id="kwEndMonth" />
+        </div>
+      </div>
+      <div style="margin-top:8px; font-size:11px; color:var(--text-sub);" id="kwDatePreview"></div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <label style="margin:0; font-size:12px; font-weight:500; color:var(--text-sub);">Keywords</label>
+      <button class="btn-small" onclick="openKwModal()" style="font-size:11px; padding:4px 10px;">+ Add Keywords</button>
+    </div>
+    <div id="kwCountDisplay" style="font-size:11px; color:var(--text-sub); margin-bottom:12px; display:none;">
+      <span id="kwCountText"></span>
+      <button onclick="openKwModal()" style="background:none; border:none; color:#000; text-decoration:underline; cursor:pointer; font-size:11px; padding:0; margin-left:6px;">Edit</button>
+    </div>
+
     <label>Target Country</label>
     <input type="text" id="kwCountry" placeholder="e.g. usa, ind (Optional)" />
 
@@ -300,12 +648,6 @@
 
     <button class="primary-btn" onclick="runKwUpdate()">Start Update</button>
 
-    <button class="primary-btn" 
-            style="background:#fff; color:#d93025; border:1px solid #d93025; margin-top:10px;" 
-            onclick="resetSheetContent()">
-      Reset Sheet Content
-    </button>
-
     <div id="kwProgressWrapper" style="display:none; margin-top:12px;">
       <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
         <span id="kwProgressText">Starting...</span>
@@ -316,30 +658,65 @@
     </div>
     <div id="kwStatus" class="status"></div>
     <button id="stopBtn" class="primary-btn btn-danger" onclick="stopKwUpdateUI()" style="display:none; margin-top:8px;">Stop Updating</button>
+    <button id="resumeBtn" class="primary-btn" onclick="resumeKwUpdate()" style="display:none; margin-top:8px; background:#1a73e8; border-color:#1a73e8;">⟳ Resume Update</button>
   </div>
 
+  <!-- URL TRACKER - UPGRADED -->
   <div id="urlSection" class="section" style="display:none;">
+    <!-- DATE RANGE -->
+    <div class="month-selector">
+      <div class="month-selector-header">
+        <label>Date Range</label>
+      </div>
+
+      <select id="urlDateRangeMode">
+        <option value="last_7" selected>Last 7 days</option>
+        <option value="last_28">Last 28 days</option>
+        <option value="last_30">Last 30 days</option>
+        <option value="last_90">Last 90 days</option>
+        <option value="last_6m">Last 6 months</option>
+        <option value="last_12m">Last 12 months</option>
+        <option value="all_time">All time (GSC ~16 months)</option>
+        <option value="custom_date">Custom Date</option>
+        <option value="custom_month">Custom Month</option>
+      </select>
+
+      <div id="urlCustomDateFields" style="display:none; margin-top:10px;">
+        <div style="margin-bottom:10px;">
+          <span class="month-range-label">Start Date</span>
+          <input type="date" id="urlStartDate" />
+        </div>
+        <div>
+          <span class="month-range-label">End Date</span>
+          <input type="date" id="urlEndDate" />
+        </div>
+      </div>
+
+      <div id="urlCustomMonthFields" style="display:none; margin-top:10px;">
+        <div style="margin-bottom:10px;">
+          <span class="month-range-label">Start Month</span>
+          <input type="month" id="urlStartMonth" />
+        </div>
+        <div>
+          <span class="month-range-label">End Month</span>
+          <input type="month" id="urlEndMonth" />
+        </div>
+      </div>
+
+      <div style="margin-top:8px; font-size:11px; color:var(--text-sub);" id="urlMonthCount">Will fetch 0 months</div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <label style="margin:0; font-size:12px; font-weight:500; color:var(--text-sub);">URLs</label>
+      <button class="btn-small" onclick="openUrlModal()" style="font-size:11px; padding:4px 10px;">+ Add URLs</button>
+    </div>
+    <div id="urlCountDisplay" style="font-size:11px; color:var(--text-sub); margin-bottom:12px; display:none;">
+      <span id="urlCountText"></span>
+      <button onclick="openUrlModal()" style="background:none; border:none; color:#000; text-decoration:underline; cursor:pointer; font-size:11px; padding:0; margin-left:6px;">Edit</button>
+    </div>
+
     <label>Target Country</label>
     <input type="text" id="urlCountry" placeholder="e.g. ind, usa (Optional)" />
-
-    <label>Date Range</label>
-    <select id="urlDateRange" onchange="toggleUrlCustomDates()">
-      <option value="28d" selected>Last 28 days</option>
-      <option value="7d">Last 7 days</option>
-      <option value="30d">Last 30 days</option>
-      <option value="90d">Last 90 days</option>
-      <option value="180d">Last 6 months</option>
-      <option value="365d">Last 12 months</option>
-      <option value="all">All time</option>
-      <option value="custom">Custom Date...</option>
-    </select>
-
-    <div id="urlCustomDates" style="display:none; background:#f1f3f4; padding:10px; border-radius:8px; margin-bottom:12px;">
-      <label>Start Date</label>
-      <input type="date" id="urlCustomStart" style="margin-bottom:8px;"/>
-      <label>End Date</label>
-      <input type="date" id="urlCustomEnd" style="margin-bottom:0;"/>
-    </div>
 
     <label>Search Type</label>
     <select id="urlSearchType">
@@ -351,16 +728,73 @@
       <option value="discover">Discover</option>
     </select>
 
+    <div class="filters-header" style="margin-top:14px;">
+      <span style="font-weight:600; font-size:12px;">Select Metrics</span>
+      <button class="btn-small" onclick="openUrlMetricsModal()">+ Select</button>
+    </div>
+    <div id="urlMetricsBadge" style="display:none; font-size:11px; color:var(--text-sub); margin-bottom:8px; align-items:center; gap:8px; flex-wrap:wrap;">
+      <span id="urlMetricsBadgeText"></span>
+      <button onclick="resetUrlMetrics()" class="btn-small" style="font-size:10px; padding:2px 8px;">✕ Reset</button>
+    </div>
+
     <div style="display:flex; gap:8px; margin-top:10px;">
-      <button class="primary-btn" onclick="runUrlUpdate()">Update</button>
-      <button class="primary-btn" style="background:#fff; color:#5f6368; border:1px solid #dadce0;" onclick="resetUrlTrackerUI()">Reset</button>
+      <button class="primary-btn" id="urlUpdateBtn" onclick="runUrlUpdate()">Update</button>
+      <button class="primary-btn" style="background:#fff; color:#000; border:1px solid #000;" onclick="resetUrlTrackerUI()">Reset</button>
+    </div>
+    <div id="urlProgressWrapper" style="display:none; margin-top:12px;">
+      <div id="urlProgressText" style="font-size:11px; margin-bottom:4px; color:var(--text-sub);">Updating...</div>
+      <div class="progress-container" style="display:block;">
+        <div class="fetch-progress-bar"></div>
+      </div>
     </div>
     <div id="urlStatus" class="status"></div>
   </div>
 
-
+  <!-- FETCH DATA - UPGRADED -->
   <div id="fetchSection" class="section" style="display:none;">
-    <label>Search Type</label>
+    <!-- DATE RANGE -->
+    <div class="month-selector">
+      <div class="month-selector-header">
+        <label>Date Range</label>
+      </div>
+
+      <select id="fetchDateRangeMode">
+        <option value="last_7" selected>Last 7 days</option>
+        <option value="last_28">Last 28 days</option>
+        <option value="last_30">Last 30 days</option>
+        <option value="last_90">Last 90 days</option>
+        <option value="last_6m">Last 6 months</option>
+        <option value="last_12m">Last 12 months</option>
+        <option value="all_time">All time (GSC ~16 months)</option>
+        <option value="custom_date">Custom Date</option>
+        <option value="custom_month">Custom Month</option>
+      </select>
+
+      <div id="fetchCustomDateFields" style="display:none; margin-top:10px;">
+        <div style="margin-bottom:10px;">
+          <span class="month-range-label">Start Date</span>
+          <input type="date" id="fetchStartDate" />
+        </div>
+        <div>
+          <span class="month-range-label">End Date</span>
+          <input type="date" id="fetchEndDate" />
+        </div>
+      </div>
+
+      <div id="fetchCustomMonthFields" style="display:none; margin-top:10px;">
+        <div style="margin-bottom:10px;">
+          <span class="month-range-label">Start Month</span>
+          <input type="month" id="fetchStartMonth" />
+        </div>
+        <div>
+          <span class="month-range-label">End Month</span>
+          <input type="month" id="fetchEndMonth" />
+        </div>
+      </div>
+
+      <div style="margin-top:8px; font-size:11px; color:var(--text-sub);" id="fetchMonthPreview"></div>
+    </div>
+<label>Search Type</label>
     <select id="searchType">
       <option value="web">Web</option>
       <option value="image">Image</option>
@@ -369,22 +803,6 @@
       <option value="googleNews">Google News</option>
       <option value="discover">Discover</option>
     </select>
-
-    <label>Date Range</label>
-    <select id="dateRange" onchange="toggleCustomDates()">
-      <option value="28d">Last 28 days</option>
-      <option value="7d">Last 7 days</option>
-      <option value="30d">Last 30 days</option>
-      <option value="90d">Last 90 days</option>
-      <option value="365d">Last 365 days</option>
-      <option value="all">All time</option>
-      <option value="custom">Custom Date...</option>
-    </select>
-
-    <div id="customDates" style="display:none; background:#f1f3f4; padding:10px; border-radius:8px; margin-bottom:12px;">
-      <input type="date" id="customStart" style="margin-bottom:8px;"/>
-      <input type="date" id="customEnd" style="margin-bottom:0;"/>
-    </div>
 
     <div class="accordion-header" onclick="toggleDimensions()">
       <span>Dimensions (Group By)</span>
@@ -417,7 +835,7 @@
       <button type="button" class="btn-small" onclick="addFilterRow()">+ Add</button>
     </div>
 
-    <div style="background:#f1f3f4; padding:8px; border-radius:6px; margin-bottom:8px;">
+    <div style="background:#fafafa; border:1px solid #000; padding:8px; border-radius: 0; margin-bottom:8px;">
       <div style="display:flex; gap:6px; align-items:center;">
         <select id="presetRegex" style="margin:0; height:auto; padding:6px; font-size:12px;">
           <option value="">Quick Presets...</option>
@@ -436,10 +854,19 @@
 
     <div id="filtersContainer"></div>
 
+    <div class="filters-header" style="margin-top:16px;">
+      <span style="font-weight:600; font-size:12px;">Filter Rows</span>
+      <button class="btn-small" onclick="openRowFilterModal()">+ Configure</button>
+    </div>
+    <div id="rfBadge" style="display:none; font-size:11px; color:var(--text-sub); margin-bottom:8px; display:none; align-items:center; gap:8px; flex-wrap:wrap;">
+      <span id="rfBadgeText"></span>
+      <button onclick="clearRowFilters()" class="btn-small" style="font-size:10px; padding:2px 8px;">✕ Clear</button>
+    </div>
+
     <button id="fetchBtn" class="primary-btn" onclick="runAdvancedFetch()">Fetch Data</button>
 
     <div id="fetchProgressWrapper" style="display:none; margin-top:12px;">
-      <div id="fetchProgressText" style="font-size:11px; margin-bottom:4px;">Fetching...</div>
+      <div id="fetchProgressText" style="font-size:11px; margin-bottom:4px; color:var(--text-sub);">Fetching...</div>
       <div class="progress-container" style="display:block;">
         <div class="fetch-progress-bar"></div>
       </div>
@@ -448,14 +875,124 @@
   </div>
 
   <button id="clearToolBtn" class="primary-btn" 
-          style="background:#fff; color:#202124; border:1px solid #dadce0; margin-top:16px; display:none;"
+          style="background:#fff; color:#000; border:1px solid #000; margin-top:16px; display:none;"
           onclick="resetToolUI()">
     Start Over / Reset Form
   </button>
 
-  <div class="app-footer">
-    Made with ❤️ by <a href="https://www.linkedin.com/in/shah-harsh02/" target="_blank">HarsH</a>
+
+  </div><!-- /mainContent -->
+
+  <!-- KEYWORD INPUT MODAL -->
+  <div id="kwModalOverlay" class="kw-modal-overlay" onclick="handleModalOverlayClick(event)">
+    <div class="kw-modal">
+      <p class="kw-modal-title">Add Keywords</p>
+      <p class="kw-modal-hint">Paste or type keywords — one per line. Duplicates will be removed automatically.</p>
+      <textarea id="kwModalInput" placeholder="e.g.&#10;fire rated glass&#10;bullet resistant glass&#10;glass partition" oninput="updateKwCounter()"></textarea>
+      <p class="kw-modal-counter" id="kwModalCounter">0 keywords</p>
+      <div class="kw-modal-actions">
+        <button class="btn-cancel" onclick="closeKwModal()">Cancel</button>
+        <button class="btn-add-kw" onclick="confirmAddKeywords()">Add to Sheet</button>
+      </div>
+    </div>
   </div>
+
+  <!-- URL INPUT MODAL -->
+  <div id="urlModalOverlay" class="kw-modal-overlay" onclick="handleUrlModalOverlayClick(event)">
+    <div class="kw-modal">
+      <p class="kw-modal-title">Add URLs</p>
+      <p class="kw-modal-hint">Paste or type URLs — one per line. Duplicates will be removed automatically.</p>
+      <textarea id="urlModalInput" placeholder="e.g.&#10;https://example.com/page-1&#10;https://example.com/page-2" oninput="updateUrlCounter()"></textarea>
+      <p class="kw-modal-counter" id="urlModalCounter">0 URLs</p>
+      <div class="kw-modal-actions">
+        <button class="btn-cancel" onclick="closeUrlModal()">Cancel</button>
+        <button class="btn-add-kw" onclick="confirmAddUrls()">Add to Sheet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- URL METRICS MODAL -->
+  <div id="urlMetricsModalOverlay" class="kw-modal-overlay" onclick="handleUrlMetricsOverlayClick(event)">
+    <div class="kw-modal">
+      <p class="kw-modal-title">Select Metrics</p>
+      <p class="kw-modal-hint">Choose which metrics to pull for each URL. Defaults to Clicks, Impressions, CTR and Avg Position.</p>
+      <div>
+        <label class="checkbox-wrap"><input type="checkbox" name="urlMetric" value="clicks"> <span>Clicks</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="urlMetric" value="impressions"> <span>Impressions</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="urlMetric" value="ctr"> <span>CTR</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="urlMetric" value="position"> <span>Avg Position</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="urlMetric" value="queries"> <span>Queries</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="urlMetric" value="last_crawl"> <span>Last Crawl</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="urlMetric" value="is_indexed"> <span>Indexed</span></label>
+      </div>
+      <p style="margin:4px 0 0 0; font-size:11px; color:var(--text-sub);">⚠️ Last Crawl &amp; Indexed use the URL Inspection API — one request per URL, may be slow for large lists.</p>
+      <div class="kw-modal-actions">
+        <button class="btn-cancel" onclick="closeUrlMetricsModal()">Cancel</button>
+        <button class="btn-add-kw" onclick="confirmUrlMetrics()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW FILTER MODAL -->
+  <div id="rfModalOverlay" class="kw-modal-overlay" onclick="handleRfModalOverlayClick(event)">
+    <div class="kw-modal">
+      <p class="kw-modal-title">Filter Rows</p>
+      <p class="kw-modal-hint">Post-fetch filter — rows not meeting all conditions are excluded from the sheet. Leave a metric on Select to skip it.</p>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div>
+          <label style="margin-bottom:6px; display:block;">Clicks</label>
+          <select id="rfClicksOp">
+            <option value="">Select</option>
+            <option value="eq">= Equals</option>
+            <option value="neq">≠ Not equals</option>
+            <option value="gt">&gt; Greater than</option>
+            <option value="gte">≥ Greater than or equal</option>
+            <option value="lt">&lt; Less than</option>
+            <option value="lte">≤ Less than or equal</option>
+          </select>
+          <input type="number" id="rfClicksVal" min="0" placeholder="Value" />
+        </div>
+
+        <div>
+          <label style="margin-bottom:6px; display:block;">Impressions</label>
+          <select id="rfImpressionsOp">
+            <option value="">Select</option>
+            <option value="eq">= Equals</option>
+            <option value="neq">≠ Not equals</option>
+            <option value="gt">&gt; Greater than</option>
+            <option value="gte">≥ Greater than or equal</option>
+            <option value="lt">&lt; Less than</option>
+            <option value="lte">≤ Less than or equal</option>
+          </select>
+          <input type="number" id="rfImpressionsVal" min="0" placeholder="Value" />
+        </div>
+
+        <div>
+          <label style="margin-bottom:6px; display:block;">Position</label>
+          <select id="rfPositionOp">
+            <option value="">Select</option>
+            <option value="eq">= Equals</option>
+            <option value="neq">≠ Not equals</option>
+            <option value="gt">&gt; Greater than</option>
+            <option value="gte">≥ Greater than or equal</option>
+            <option value="lt">&lt; Less than</option>
+            <option value="lte">≤ Less than or equal</option>
+          </select>
+          <input type="number" id="rfPositionVal" min="1" placeholder="Value" />
+        </div>
+      </div>
+
+      <div class="kw-modal-actions">
+        <button class="btn-cancel" onclick="closeRowFilterModal()">Cancel</button>
+        <button class="btn-add-kw" onclick="confirmRowFilters()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+<div class="app-footer">
+  Made with ❤️ by&nbsp;&nbsp;<a href="https://www.linkedin.com/in/shah-harsh02/" target="_blank">HarsH</a>
+</div>
 
 <script>
 let ALL_SITES = [];
@@ -463,6 +1000,8 @@ let dropdownOpen = false;
 let kwProgressTimer = null;
 let SITES_LOADED = false;
 let SITES_LOADING = false;
+
+let urlMonths = [];
 
 // Accordion Toggle
 function toggleDimensions() {
@@ -472,7 +1011,7 @@ function toggleDimensions() {
   header.classList.toggle('open');
 }
 
-// === NEW REGEX PRESETS ADDED HERE ===
+// === REGEX PRESETS ===
 const PRESET_REGEX = {
   "5plus": "(\\S+\\s+){4,}\\S+",
   "nonenglish": ".*[^\\x00-\\x7F].*",
@@ -500,141 +1039,264 @@ function hideClearButton() {
   if (btn) btn.style.display = 'none';
 }
 
-// --- Sites ---
-function loadSites_() {
-  if (SITES_LOADING) return;
-  SITES_LOADING = true;
-  const listEl = document.getElementById('siteList');
-  if (listEl) listEl.innerHTML = '<div class="site-item" style="color:#999;">Loading...</div>';
 
-  google.script.run
-    .withSuccessHandler(list => {
-      ALL_SITES = list || [];
-      SITES_LOADED = true;
-      SITES_LOADING = false;
-      renderSiteList(document.getElementById('siteSearch').value || '');
-    })
-    .withFailureHandler(err => {
-      SITES_LOADED = false;
-      SITES_LOADING = false;
-      if (listEl) listEl.innerHTML = '<div class="site-item" style="color:#d93025;">Error loading sites</div>';
-    })
-    .getGscSites();
+
+function monthsBetweenInclusive_(startYm, endYm) {
+  if (!startYm) return [];
+  if (!endYm) endYm = startYm;
+
+  const [sy, sm] = startYm.split('-').map(n => parseInt(n, 10));
+  const [ey, em] = endYm.split('-').map(n => parseInt(n, 10));
+
+  let y1 = sy, m1 = sm, y2 = ey, m2 = em;
+  if (y1 > y2 || (y1 === y2 && m1 > m2)) {
+    [y1, y2] = [y2, y1];
+    [m1, m2] = [m2, m1];
+  }
+
+  const out = [];
+  let y = y1, m = m1;
+  while (y < y2 || (y === y2 && m <= m2)) {
+    out.push(`${String(y).padStart(4,'0')}-${String(m).padStart(2,'0')}`);
+    m += 1;
+    if (m === 13) { m = 1; y += 1; }
+  }
+  return out;
 }
 
-window.addEventListener('DOMContentLoaded', () => { loadSites_(); });
+function monthsBetweenDates_(startDate, endDate) {
+  if (!(startDate instanceof Date) || isNaN(startDate)) return [];
+  if (!(endDate instanceof Date) || isNaN(endDate)) endDate = new Date(startDate);
 
-function renderSiteList(filterText) {
-  const listEl = document.getElementById('siteList');
-  if (!listEl) return;
-  listEl.innerHTML = '';
-  const t = (filterText || '').toLowerCase();
-  const filtered = ALL_SITES.filter(s => !t || (s.siteUrl || '').toLowerCase().includes(t));
+  // Ensure order
+  let s = startDate, e = endDate;
+  if (s.getTime() > e.getTime()) { [s, e] = [e, s]; }
 
-  if (!filtered.length) {
-    listEl.innerHTML = '<div class="site-item" style="color:#999;">No matches</div>';
+  const startYm = `${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,'0')}`;
+  const endYm = `${e.getFullYear()}-${String(e.getMonth()+1).padStart(2,'0')}`;
+  return monthsBetweenInclusive_(startYm, endYm);
+}
+
+// Generic date-mode builder — prefix = 'url' | 'fetch' | 'kw'
+function buildMonthsFromDateMode_(prefix) {
+  const modeEl = document.getElementById(prefix + 'DateRangeMode');
+  const mode = modeEl ? modeEl.value : 'last_7';
+  const now = new Date();
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  if (mode === 'custom_month') {
+    const startM = (document.getElementById(prefix + 'StartMonth')?.value || '').trim();
+    const endM   = (document.getElementById(prefix + 'EndMonth')?.value   || '').trim();
+    if (!startM) return [];
+    return monthsBetweenInclusive_(startM, endM || startM);
+  }
+  if (mode === 'custom_date') {
+    const sVal = (document.getElementById(prefix + 'StartDate')?.value || '').trim();
+    const eVal = (document.getElementById(prefix + 'EndDate')?.value   || '').trim();
+    if (!sVal) return [];
+    return [{ type: 'exact', startDate: sVal, endDate: eVal || sVal }];
+  }
+  const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  let start = new Date(end);
+  if      (mode === 'last_7')   start.setDate(start.getDate() - 7);
+  else if (mode === 'last_30')  start.setDate(start.getDate() - 30);
+  else if (mode === 'last_90')  start.setDate(start.getDate() - 90);
+  else if (mode === 'last_6m')  start.setMonth(start.getMonth() - 6);
+  else if (mode === 'last_12m') start.setMonth(start.getMonth() - 12);
+  else if (mode === 'all_time') start.setMonth(start.getMonth() - 16);
+  else                          start.setDate(start.getDate() - 28);
+  return [{ type: 'exact', startDate: fmt(start), endDate: fmt(end) }];
+}
+
+// Generic preview setter
+function setDatePreview_(elId, months) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (!months || !months.length) { el.textContent = ''; return; }
+  if (months[0] && months[0].type === 'exact') {
+    el.textContent = `Will fetch: ${months[0].startDate} → ${months[0].endDate} (single range)`;
     return;
   }
-  filtered.forEach(s => {
-    const item = document.createElement('div');
-    item.className = 'site-item';
-    item.textContent = s.siteUrl;
-    item.onclick = () => selectSite(s.siteUrl);
-    listEl.appendChild(item);
+  const first = months[0], last = months[months.length - 1];
+  el.textContent = months.length === 1
+    ? `Will fetch 1 month: ${first}`
+    : `Will fetch ${months.length} months: ${first} → ${last}`;
+}
+
+// Thin wrappers kept so call-sites in runXxx() functions are unchanged
+function buildUrlMonthsFromDateMode_()   { return buildMonthsFromDateMode_('url'); }
+function buildFetchMonthsFromDateMode_() { return buildMonthsFromDateMode_('fetch'); }
+
+function handleUrlDateModeChange_() {
+  const mode = document.getElementById('urlDateRangeMode')?.value || 'last_7';
+  const df = document.getElementById('urlCustomDateFields');
+  const mf = document.getElementById('urlCustomMonthFields');
+  if (df) df.style.display = (mode === 'custom_date')  ? '' : 'none';
+  if (mf) mf.style.display = (mode === 'custom_month') ? '' : 'none';
+  const el = document.getElementById('urlMonthCount');
+  const months = buildUrlMonthsFromDateMode_();
+  if (el) {
+    if (months.length && months[0].type === 'exact')
+      el.textContent = `Will fetch: ${months[0].startDate} → ${months[0].endDate} (single range)`;
+    else
+      el.textContent = `Will fetch ${months.length} month(s)`;
+  }
+}
+
+function handleFetchDateModeChange_() {
+  const mode = document.getElementById('fetchDateRangeMode')?.value || 'last_7';
+  const df = document.getElementById('fetchCustomDateFields');
+  const mf = document.getElementById('fetchCustomMonthFields');
+  if (df) df.style.display = (mode === 'custom_date')  ? '' : 'none';
+  if (mf) mf.style.display = (mode === 'custom_month') ? '' : 'none';
+  setDatePreview_('fetchMonthPreview', buildFetchMonthsFromDateMode_());
+}
+
+
+
+
+
+// === TAB SWITCHING ===
+document.querySelectorAll('input[name="gscMode"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    document.getElementById('kwSection').style.display = 'none';
+    document.getElementById('urlSection').style.display = 'none';
+    document.getElementById('fetchSection').style.display = 'none';
+    
+    if (this.value === 'kw') {
+      document.getElementById('kwSection').style.display = '';
+    } else if (this.value === 'url') {
+      document.getElementById('urlSection').style.display = '';
+    } else if (this.value === 'fetch') {
+      document.getElementById('fetchSection').style.display = '';
+    }
   });
-}
-
-function selectSite(v) {
-  document.getElementById('siteValue').value = v;
-  const t = document.getElementById('siteSelectedText');
-  t.textContent = v;
-  t.classList.remove('site-selected-placeholder');
-  t.style.color = '#202124';
-  closeDropdown();
-}
-
-function openDropdown() {
-  document.getElementById('siteDropdown').classList.add('open');
-  dropdownOpen = true;
-  document.getElementById('siteSearch').focus();
-  if (!SITES_LOADED && !SITES_LOADING) loadSites_();
-}
-
-function closeDropdown() {
-  document.getElementById('siteDropdown').classList.remove('open');
-  dropdownOpen = false;
-}
-
-document.getElementById('siteSelected').onclick = function(e) { e.stopPropagation(); dropdownOpen ? closeDropdown() : openDropdown(); };
-document.getElementById('siteSearch').oninput = function(e) { renderSiteList(e.target.value); };
-document.addEventListener('click', e => { if (dropdownOpen && !document.getElementById('siteDropdown').contains(e.target)) closeDropdown(); });
-
-// --- Tabs ---
-Array.from(document.getElementsByName('gscMode')).forEach(r => {
-  r.onchange = () => {
-    const m = document.querySelector('input[name="gscMode"]:checked').value;
-    document.getElementById('kwSection').style.display = m === 'kw' ? '' : 'none';
-    document.getElementById('urlSection').style.display = m === 'url' ? '' : 'none';
-    document.getElementById('fetchSection').style.display = m === 'fetch' ? '' : 'none';
-  };
 });
 
-// --- Logic Helpers ---
-function toggleUrlCustomDates() {
-  const k = document.getElementById('urlDateRange').value;
-  document.getElementById('urlCustomDates').style.display = k === 'custom' ? 'block' : 'none';
-}
-function toggleCustomDates() {
-  const k = document.getElementById('dateRange').value;
-  document.getElementById('customDates').style.display = k === 'custom' ? 'block' : 'none';
-}
+// === SITE DROPDOWN ===
+document.addEventListener('DOMContentLoaded', () => {
+  const dropdown = document.getElementById('siteDropdown');
 
-function resetUrlTrackerUI() {
-  document.getElementById('urlCountry').value = '';
-  document.getElementById('urlDateRange').value = '28d';
-  document.getElementById('urlSearchType').value = 'web';
-  document.getElementById('urlCustomDates').style.display = 'none';
-  document.getElementById('urlCustomStart').value = '';
-  document.getElementById('urlCustomEnd').value = '';
-  document.getElementById('urlStatus').innerHTML = '';
-}
+  // URL Tracker date range mode handler
+  const urlModeEl = document.getElementById('urlDateRangeMode');
+  if (urlModeEl) {
+    urlModeEl.addEventListener('change', handleUrlDateModeChange_);
+    handleUrlDateModeChange_();
+    ['urlStartDate','urlEndDate','urlStartMonth','urlEndMonth'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', handleUrlDateModeChange_);
+    });
+  }
 
-function addFilterRow(preset) {
-  const all = ["query", "page", "country", "device"];
-  const used = [...document.querySelectorAll('.filter-dim')].map(s => s.value);
-  const avail = all.filter(d => !used.includes(d));
-  const cont = document.getElementById('filtersContainer');
-  const row = document.createElement('div');
-  row.className = 'filter-row';
-  const presetDim = preset && preset.dimension ? preset.dimension : null;
-  const presetOp  = preset && preset.operator ? preset.operator : "contains";
-  const presetVal = preset && preset.expression ? preset.expression : "";
-  const dimsForThisRow = presetDim ? all : avail;
+  // Fetch Data date range mode handler
+  const fetchModeEl = document.getElementById('fetchDateRangeMode');
+  if (fetchModeEl) {
+    fetchModeEl.addEventListener('change', handleFetchDateModeChange_);
+    handleFetchDateModeChange_();
+    ['fetchStartDate','fetchEndDate','fetchStartMonth','fetchEndMonth'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', handleFetchDateModeChange_);
+    });
+  }
 
-  if (!dimsForThisRow.length) return alert("All dimensions used");
+  // KW Tracker date range mode handler
+  const kwModeEl = document.getElementById('kwDateRangeMode');
+  if (kwModeEl) {
+    kwModeEl.addEventListener('change', handleKwDateModeChange_);
+    handleKwDateModeChange_();
+    ['kwStartDate','kwEndDate','kwStartMonth','kwEndMonth'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', handleKwDateModeChange_);
+    });
+  }
 
-  let opts = '';
-  dimsForThisRow.forEach(d => {
-    const selected = (d === (presetDim || dimsForThisRow[0])) ? ' selected' : '';
-    opts += `<option value="${d}"${selected}>${d}</option>`;
+  const selected = document.getElementById('siteSelected');
+  const searchInput = document.getElementById('siteSearch');
+
+  // Pre-load sites immediately on sidebar open — dropdown is instant when clicked
+  SITES_LOADING = true;
+  google.script.run.withSuccessHandler(sites => {
+    ALL_SITES = sites;
+    SITES_LOADED = true;
+    SITES_LOADING = false;
+    renderSiteList(sites);
+  }).withFailureHandler(() => {
+    SITES_LOADING = false;
+  }).getGscSites();
+
+  selected.addEventListener('click', () => {
+    if (SITES_LOADING) {
+      dropdown.classList.add('open');
+      document.getElementById('siteList').innerHTML = '<div style="padding:10px; text-align:center; color:#999;">Loading...</div>';
+    } else {
+      dropdown.classList.toggle('open');
+    }
   });
 
-  row.innerHTML =
-    `<select class="filter-dim">${opts}</select>` +
-    `<select class="filter-op">` +
-      `<option value="contains">Containing</option>` +
-      `<option value="notContains">Not containing</option>` +
-      `<option value="equals">Exact</option>` +
-      `<option value="includingRegex">Matches regex</option>` +
-      `<option value="excludingRegex">Doesn't match regex</option>` +
-    `</select>` +
-    `<input type="text" class="filter-val" placeholder="Value" />` +
-    `<button type="button" class="filter-remove">×</button>`;
+  searchInput.addEventListener('input', e => {
+    const query = e.target.value.toLowerCase();
+    const filtered = ALL_SITES.filter(s => s.siteUrl.toLowerCase().includes(query));
+    renderSiteList(filtered);
+  });
 
-  cont.appendChild(row);
-  row.querySelector('.filter-op').value = presetOp;
-  row.querySelector('.filter-val').value = presetVal;
-  row.querySelector('.filter-remove').onclick = () => row.remove();
+  document.addEventListener('click', e => {
+    if (!dropdown.contains(e.target)) {
+      dropdown.classList.remove('open');
+    }
+  });
+});
+
+function renderSiteList(sites) {
+  const list = document.getElementById('siteList');
+  if (!sites.length) {
+    list.innerHTML = '<div style="padding:10px; text-align:center; color:#999;">No properties found</div>';
+    return;
+  }
+  list.innerHTML = sites.map(s => 
+    `<div class="site-item" data-url="${s.siteUrl}">${s.siteUrl}</div>`
+  ).join('');
+
+  list.querySelectorAll('.site-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const url = item.getAttribute('data-url');
+      document.getElementById('siteValue').value = url;
+      document.getElementById('siteSelectedText').textContent = url;
+      document.getElementById('siteSelectedText').classList.remove('site-selected-placeholder');
+      document.getElementById('siteDropdown').classList.remove('open');
+    });
+  });
+}
+
+// === FILTERS ===
+function addFilterRow(preset) {
+  const container = document.getElementById('filtersContainer');
+  const row = document.createElement('div');
+  row.className = 'filter-row';
+  
+  const dimVal = preset?.dimension || 'query';
+  const opVal = preset?.operator || 'contains';
+  const exprVal = preset?.expression || '';
+  
+  row.innerHTML = `
+    <select class="filter-dim">
+      <option value="query" ${dimVal === 'query' ? 'selected' : ''}>Query</option>
+      <option value="page" ${dimVal === 'page' ? 'selected' : ''}>Page</option>
+      <option value="country" ${dimVal === 'country' ? 'selected' : ''}>Country</option>
+      <option value="device" ${dimVal === 'device' ? 'selected' : ''}>Device</option>
+      <option value="searchAppearance" ${dimVal === 'searchAppearance' ? 'selected' : ''}>Appearance</option>
+    </select>
+    <select class="filter-op">
+      <option value="equals" ${opVal === 'equals' ? 'selected' : ''}>Equals</option>
+      <option value="notEquals" ${opVal === 'notEquals' ? 'selected' : ''}>Not Equals</option>
+      <option value="contains" ${opVal === 'contains' ? 'selected' : ''}>Contains</option>
+      <option value="notContains" ${opVal === 'notContains' ? 'selected' : ''}>Not Contains</option>
+      <option value="includingRegex" ${opVal === 'includingRegex' ? 'selected' : ''}>Regex</option>
+      <option value="excludingRegex" ${opVal === 'excludingRegex' ? 'selected' : ''}>Not Regex</option>
+    </select>
+    <input type="text" class="filter-val" placeholder="Value..." value="${exprVal}" />
+    <button type="button" class="filter-remove" onclick="this.parentElement.remove()">×</button>
+  `;
+  container.appendChild(row);
 }
 
 function collectFilters() {
@@ -657,10 +1319,143 @@ function formatETA(ms) {
   return (h > 0) ? `${h}h ${m}m remaining` : `${m}m ${s}s remaining`;
 }
 
+// === KEYWORD MODAL ===
+let kwModalKeywords = []; // in-memory keyword list
+
+function openKwModal() {
+  const ta = document.getElementById('kwModalInput');
+  ta.value = kwModalKeywords.join('\n');
+  updateKwCounter();
+  document.getElementById('kwModalOverlay').classList.add('open');
+  setTimeout(() => ta.focus(), 50);
+}
+
+function closeKwModal() {
+  document.getElementById('kwModalOverlay').classList.remove('open');
+}
+
+function handleModalOverlayClick(e) {
+  if (e.target === document.getElementById('kwModalOverlay')) closeKwModal();
+}
+
+function updateKwCounter() {
+  const lines = document.getElementById('kwModalInput').value
+    .split('\n').map(l => l.trim()).filter(Boolean);
+  const unique = [...new Set(lines.map(l => l.toLowerCase()))].length;
+  document.getElementById('kwModalCounter').textContent = unique + ' keyword' + (unique !== 1 ? 's' : '');
+}
+
+function confirmAddKeywords() {
+  const lines = document.getElementById('kwModalInput').value
+    .split('\n').map(l => l.trim()).filter(Boolean);
+  const seen = new Set();
+  kwModalKeywords = lines.filter(l => {
+    const key = l.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const display = document.getElementById('kwCountDisplay');
+  const countText = document.getElementById('kwCountText');
+  if (kwModalKeywords.length > 0) {
+    countText.textContent = kwModalKeywords.length + ' keyword' + (kwModalKeywords.length !== 1 ? 's' : '') + ' added';
+    display.style.display = 'block';
+  } else {
+    display.style.display = 'none';
+  }
+  closeKwModal();
+}
+
+// === URL MODAL ===
+let urlModalUrls = []; // in-memory URL list
+
+function openUrlModal() {
+  const ta = document.getElementById('urlModalInput');
+  ta.value = urlModalUrls.join('\n');
+  updateUrlCounter();
+  document.getElementById('urlModalOverlay').classList.add('open');
+  setTimeout(() => ta.focus(), 50);
+}
+
+function closeUrlModal() {
+  document.getElementById('urlModalOverlay').classList.remove('open');
+}
+
+function handleUrlModalOverlayClick(e) {
+  if (e.target === document.getElementById('urlModalOverlay')) closeUrlModal();
+}
+
+function updateUrlCounter() {
+  const lines = document.getElementById('urlModalInput').value
+    .split('\n').map(l => l.trim()).filter(Boolean);
+  const unique = [...new Set(lines.map(l => l.toLowerCase()))].length;
+  document.getElementById('urlModalCounter').textContent = unique + ' URL' + (unique !== 1 ? 's' : '');
+}
+
+function confirmAddUrls() {
+  const lines = document.getElementById('urlModalInput').value
+    .split('\n').map(l => l.trim()).filter(Boolean);
+  const seen = new Set();
+  urlModalUrls = lines.filter(l => {
+    const key = l.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const display = document.getElementById('urlCountDisplay');
+  const countText = document.getElementById('urlCountText');
+  if (urlModalUrls.length > 0) {
+    countText.textContent = urlModalUrls.length + ' URL' + (urlModalUrls.length !== 1 ? 's' : '') + ' added';
+    display.style.display = 'block';
+  } else {
+    display.style.display = 'none';
+  }
+  closeUrlModal();
+}
+
+
+function buildKwMonthsFromDateMode_() { return buildMonthsFromDateMode_('kw'); }
+
+function handleKwDateModeChange_() {
+  const mode = document.getElementById('kwDateRangeMode')?.value || 'last_7';
+  const df = document.getElementById('kwCustomDateFields');
+  const mf = document.getElementById('kwCustomMonthFields');
+  if (df) df.style.display = (mode === 'custom_date')  ? '' : 'none';
+  if (mf) mf.style.display = (mode === 'custom_month') ? '' : 'none';
+  setDatePreview_('kwDatePreview', buildKwMonthsFromDateMode_());
+}
+
+// === REFRESH SITES ===
+function refreshSitesList() {
+  const btn = document.getElementById('refreshSitesBtn');
+  btn.textContent = '↻ ...';
+  btn.disabled = true;
+  SITES_LOADED = false;
+  SITES_LOADING = true;
+  ALL_SITES = [];
+  document.getElementById('siteList').innerHTML = '<div style="padding:10px; text-align:center; color:#999;">Refreshing...</div>';
+  google.script.run
+    .withSuccessHandler(function(sites) {
+      ALL_SITES = sites;
+      SITES_LOADED = true;
+      SITES_LOADING = false;
+      renderSiteList(sites);
+      btn.textContent = '↻ Refresh';
+      btn.disabled = false;
+    })
+    .withFailureHandler(function() {
+      SITES_LOADING = false;
+      btn.textContent = '↻ Refresh';
+      btn.disabled = false;
+    })
+    .clearGscSitesCache();
+}
+
 // --- Run Functions ---
+let _lastKwParams = null; // stored so Resume can reuse them
+
 function runKwUpdate() {
   hideClearButton();
-  const stopBtn = document.getElementById('stopBtn');
   const siteUrl = document.getElementById('siteValue').value;
   const country = document.getElementById('kwCountry').value;
   const fetchPages = document.getElementById('fetchPages').checked;
@@ -668,11 +1463,42 @@ function runKwUpdate() {
 
   if (!siteUrl) return alert("Please select a GSC property.");
 
+  if (kwModalKeywords.length === 0) {
+    const proceed = confirm(
+      "No keywords were added via the modal.\n\n" +
+      "The tool will use keywords already in Column A of the 'KW Tracker' sheet.\n\n" +
+      "Continue?"
+    );
+    if (!proceed) return;
+  }
+
+  const months = buildKwMonthsFromDateMode_();
+  if (!months || months.length === 0) {
+    const mode = document.getElementById('kwDateRangeMode')?.value;
+    return alert(mode === 'custom_month'
+      ? "Please select a Start Month (and optionally an End Month)."
+      : (mode === 'custom_date'
+        ? "Please select a Start Date (and optionally an End Date)."
+        : "Unable to determine date range. Please try again."));
+  }
+
+  _lastKwParams = { siteUrl, country, fetchPages, cannibalReport, months, keywords: kwModalKeywords };
+  _launchKwRun(_lastKwParams);
+}
+
+function resumeKwUpdate() {
+  if (!_lastKwParams) return alert("No previous run found to resume.");
+  document.getElementById('resumeBtn').style.display = 'none';
+  hideClearButton();
+  _launchKwRun(_lastKwParams);
+}
+
+function _launchKwRun(params) {
+  const stopBtn = document.getElementById('stopBtn');
   document.getElementById('kwStatus').innerHTML = '';
   document.getElementById('kwProgressWrapper').style.display = 'block';
   document.getElementById('kwProgressBar').style.width = '5%';
   document.getElementById('kwProgressText').textContent = 'Starting...';
-
   stopBtn.style.display = 'block';
   stopBtn.disabled = false;
   stopBtn.textContent = "Stop Updating";
@@ -682,11 +1508,23 @@ function runKwUpdate() {
 
   google.script.run
     .withSuccessHandler(msg => completeKwUpdateUI(msg, 'green'))
-    .withFailureHandler(err => completeKwUpdateUI(err.message || err, 'red'))
-    .fetchGscKeywordRanksFromUI({ siteUrl, country, fetchPages, cannibalReport });
+    .withFailureHandler(err => handleKwFailure_(err.message || String(err)))
+    .fetchGscKeywordRanksFromUI(params);
 }
 
-// --- NEW FUNCTION: Reset Sheet Content ---
+function handleKwFailure_(errMsg) {
+  const isTimeout = /exceeded maximum execution time/i.test(errMsg);
+  completeKwUpdateUI(
+    isTimeout
+      ? '⏱ Execution time limit reached — some months may not have been updated yet.'
+      : errMsg,
+    isTimeout ? '#b45309' : 'red'
+  );
+  if (isTimeout && _lastKwParams) {
+    document.getElementById('resumeBtn').style.display = 'block';
+  }
+}
+
 function resetSheetContent() {
   if (!confirm("Are you sure? This will clear all data and formatting in the active sheet (except the header row).")) return;
   
@@ -706,7 +1544,7 @@ function resetSheetContent() {
        btn.disabled = false;
        document.getElementById('kwStatus').innerHTML = '<p style="color:red; line-height: 1.6; margin: 0;">Error: ' + err.message + '</p>';
     })
-    .clearActiveSheetExceptHeader(); // CALLS THE SERVER SIDE FUNCTION
+    .clearActiveSheetExceptHeader();
 }
 
 function pollKwProgress() { google.script.run.withSuccessHandler(updateKwProgressUI).getKwProgress(); }
@@ -739,7 +1577,6 @@ function completeKwUpdateUI(msg, color) {
   document.getElementById('kwProgressWrapper').style.display = 'none';
   document.getElementById('stopBtn').style.display = 'none';
   
-  // FIX: Replace newlines with <br> for vertical listing
   let htmlMsg = msg.replace(/\n/g, '<br>');
   
   document.getElementById('kwStatus').innerHTML = 
@@ -751,6 +1588,7 @@ function completeKwUpdateUI(msg, color) {
 function stopKwUpdateUI() {
   const btn = document.getElementById('stopBtn');
   btn.disabled = true; btn.textContent = "Stopping...";
+  document.getElementById('resumeBtn').style.display = 'none';
   if (kwProgressTimer) { clearInterval(kwProgressTimer); kwProgressTimer = null; }
   google.script.run.withSuccessHandler(() => {
        document.getElementById('kwProgressWrapper').style.display = 'none';
@@ -760,63 +1598,271 @@ function stopKwUpdateUI() {
     }).stopKwUpdate();
 }
 
+// === ELAPSED TIMER (URL Tracker + Fetch Data) ===
+let urlElapsedTimer = null;
+let fetchElapsedTimer = null;
+
+function startElapsedTimer(textElId, timerRef, label) {
+  const el = document.getElementById(textElId);
+  if (!el) return null;
+  const start = Date.now();
+  el.textContent = label + ' — 0s elapsed';
+  return setInterval(function() {
+    const sec = Math.floor((Date.now() - start) / 1000);
+    const m = Math.floor(sec / 60), s = sec % 60;
+    el.textContent = label + ' — ' + (m > 0 ? m + 'm ' : '') + s + 's elapsed';
+  }, 1000);
+}
+
+function stopElapsedTimer(timer) {
+  if (timer) clearInterval(timer);
+  return null;
+}
+
+
+// === URL METRICS MODAL ===
+const URL_METRIC_DEFAULTS = ["clicks","impressions","ctr","position"];
+const URL_METRIC_LABELS   = { clicks:"Clicks", impressions:"Impressions", ctr:"CTR", position:"Avg Position", queries:"Queries", last_crawl:"Last Crawl", is_indexed:"Indexed" };
+let activeUrlMetrics = [...URL_METRIC_DEFAULTS];
+
+function openUrlMetricsModal() {
+  // Sync checkboxes to current active state
+  document.querySelectorAll('input[name="urlMetric"]').forEach(cb => {
+    cb.checked = activeUrlMetrics.includes(cb.value);
+  });
+  document.getElementById('urlMetricsModalOverlay').classList.add('open');
+}
+
+function closeUrlMetricsModal() {
+  document.getElementById('urlMetricsModalOverlay').classList.remove('open');
+}
+
+function handleUrlMetricsOverlayClick(e) {
+  if (e.target === document.getElementById('urlMetricsModalOverlay')) closeUrlMetricsModal();
+}
+
+function confirmUrlMetrics() {
+  const checked = Array.from(document.querySelectorAll('input[name="urlMetric"]:checked')).map(x => x.value);
+  activeUrlMetrics = checked.length ? checked : [...URL_METRIC_DEFAULTS];
+  updateUrlMetricsBadge_();
+  closeUrlMetricsModal();
+}
+
+function resetUrlMetrics() {
+  activeUrlMetrics = [...URL_METRIC_DEFAULTS];
+  document.querySelectorAll('input[name="urlMetric"]').forEach(cb => {
+    cb.checked = URL_METRIC_DEFAULTS.includes(cb.value);
+  });
+  updateUrlMetricsBadge_();
+}
+
+function updateUrlMetricsBadge_() {
+  const badge = document.getElementById('urlMetricsBadge');
+  const txt   = document.getElementById('urlMetricsBadgeText');
+  const isDefault = activeUrlMetrics.length === URL_METRIC_DEFAULTS.length &&
+    URL_METRIC_DEFAULTS.every(m => activeUrlMetrics.includes(m));
+  if (isDefault) {
+    badge.style.display = 'none';
+  } else {
+    txt.textContent = activeUrlMetrics.map(m => URL_METRIC_LABELS[m] || m).join(' · ');
+    badge.style.display = 'flex';
+  }
+}
+
+function getUrlSelectedMetrics() {
+  return activeUrlMetrics.length ? activeUrlMetrics : [...URL_METRIC_DEFAULTS];
+}
+
 function runUrlUpdate() {
   const siteUrl = document.getElementById('siteValue').value;
   if (!siteUrl) return alert("Please select a GSC property first.");
-  const dateRange = document.getElementById('urlDateRange').value;
-  const startDate = document.getElementById('urlCustomStart').value;
-  const endDate = document.getElementById('urlCustomEnd').value;
+
+  // If no URLs were added via modal, warn user
+  if (urlModalUrls.length === 0) {
+    const proceed = confirm(
+      "No URLs were added via the modal.\n\n" +
+      "The tool will use URLs already in Column A of the 'URL Tracker' sheet (starting Row 3).\n\n" +
+      "Continue?"
+    );
+    if (!proceed) return;
+  }
+
+  // Build months from date range selection
+  urlMonths = buildUrlMonthsFromDateMode_();
+
+  if (urlMonths.length === 0) {
+    const mode = document.getElementById('urlDateRangeMode')?.value;
+    return alert(mode === 'custom_month'
+      ? "Please select a Start Month (and optionally an End Month)."
+      : (mode === 'custom_date'
+        ? "Please select a Start Date (and optionally an End Date)."
+        : "No date range found for the selected option."));
+  }
+  
   const searchType = document.getElementById('urlSearchType').value;
   const country = (document.getElementById('urlCountry').value || "").trim();
 
-  document.getElementById('urlStatus').innerHTML = '<p style="color:#5f6368;">Updating...</p>';
+  const progWrap = document.getElementById('urlProgressWrapper');
+  const btn = document.getElementById('urlUpdateBtn');
+  document.getElementById('urlStatus').innerHTML = '';
+  progWrap.style.display = 'block';
+  if (btn) btn.disabled = true;
+  urlElapsedTimer = startElapsedTimer('urlProgressText', urlElapsedTimer, 'Updating');
+
   google.script.run
-    .withSuccessHandler(msg => { 
-        let htmlMsg = msg.replace(/\n/g, '<br>');
-        document.getElementById('urlStatus').innerHTML = 
-          `<p style="color:green; line-height: 1.6; margin: 0;">${htmlMsg}</p>`;
+    .withSuccessHandler(msg => {
+      urlElapsedTimer = stopElapsedTimer(urlElapsedTimer);
+      progWrap.style.display = 'none';
+      if (btn) btn.disabled = false;
+      let htmlMsg = msg.replace(/\n/g, '<br>');
+      document.getElementById('urlStatus').innerHTML =
+        `<p style="color:green; line-height: 1.6; margin: 0;">${htmlMsg}</p>`;
+      showClearButton();
     })
-    .withFailureHandler(err => { 
-        document.getElementById('urlStatus').innerHTML = 
-          '<p style="color:red;">' + (err.message || err) + '</p>'; 
+    .withFailureHandler(err => {
+      urlElapsedTimer = stopElapsedTimer(urlElapsedTimer);
+      progWrap.style.display = 'none';
+      if (btn) btn.disabled = false;
+      document.getElementById('urlStatus').innerHTML =
+        '<p style="color:red;">' + (err.message || err) + '</p>';
+      showClearButton();
     })
-    .fetchGscUrlMetricsFromUI({ siteUrl, dateRange, startDate, endDate, searchType, country });
+    .fetchGscUrlMetricsFromUI({ siteUrl, months: urlMonths, searchType, country, metrics: getUrlSelectedMetrics(), urls: urlModalUrls });
 }
 
+function resetUrlTrackerUI() {
+  urlMonths = [];
+  // Reset date range selector + fields
+  const modeEl = document.getElementById('urlDateRangeMode');
+  if (modeEl) modeEl.value = 'last_7';
+
+  const sd = document.getElementById('urlStartDate'); if (sd) sd.value = '';
+  const ed = document.getElementById('urlEndDate'); if (ed) ed.value = '';
+  const sm = document.getElementById('urlStartMonth'); if (sm) sm.value = '';
+  const em = document.getElementById('urlEndMonth'); if (em) em.value = '';
+
+  handleUrlDateModeChange_();
+  urlElapsedTimer = stopElapsedTimer(urlElapsedTimer);
+  const urlProg = document.getElementById('urlProgressWrapper');
+  if (urlProg) urlProg.style.display = 'none';
+  const urlBtn = document.getElementById('urlUpdateBtn');
+  if (urlBtn) urlBtn.disabled = false;
+  urlModalUrls = [];
+  document.getElementById('urlCountDisplay').style.display = 'none';
+  document.getElementById('urlModalInput').value = '';
+  document.getElementById('urlCountry').value = '';
+  document.getElementById('urlSearchType').value = 'web';
+  resetUrlMetrics();
+  document.getElementById('urlStatus').innerHTML = '';
+}
+
+
+// === ROW FILTER MODAL ===
+let activeRowFilters = {}; // { clicks: {op, val}, impressions: {op, val}, position: {op, val} }
+
+const RF_OP_LABELS = { eq: '=', neq: '≠', gt: '>', gte: '≥', lt: '<', lte: '≤' };
+
+function openRowFilterModal() {
+  // Populate selects/inputs from activeRowFilters
+  ['clicks','impressions','position'].forEach(metric => {
+    const f = activeRowFilters[metric];
+    document.getElementById('rf' + metric.charAt(0).toUpperCase() + metric.slice(1) + 'Op').value  = f ? f.op  : '';
+    document.getElementById('rf' + metric.charAt(0).toUpperCase() + metric.slice(1) + 'Val').value = f ? f.val : '';
+  });
+  document.getElementById('rfModalOverlay').classList.add('open');
+}
+
+function closeRowFilterModal() {
+  document.getElementById('rfModalOverlay').classList.remove('open');
+}
+
+function handleRfModalOverlayClick(e) {
+  if (e.target === document.getElementById('rfModalOverlay')) closeRowFilterModal();
+}
+
+function confirmRowFilters() {
+  activeRowFilters = {};
+  ['clicks','impressions','position'].forEach(metric => {
+    const capMetric = metric.charAt(0).toUpperCase() + metric.slice(1);
+    const op  = document.getElementById('rf' + capMetric + 'Op').value;
+    const val = parseFloat(document.getElementById('rf' + capMetric + 'Val').value);
+    if (op && !isNaN(val)) activeRowFilters[metric] = { op, val };
+  });
+  updateRfBadge_();
+  closeRowFilterModal();
+}
+
+function clearRowFilters() {
+  activeRowFilters = {};
+  ['Clicks','Impressions','Position'].forEach(m => {
+    const opEl  = document.getElementById('rf' + m + 'Op');
+    const valEl = document.getElementById('rf' + m + 'Val');
+    if (opEl)  opEl.value  = '';
+    if (valEl) valEl.value = '';
+  });
+  updateRfBadge_();
+}
+
+function updateRfBadge_() {
+  const badge    = document.getElementById('rfBadge');
+  const badgeTxt = document.getElementById('rfBadgeText');
+  const parts    = [];
+  if (activeRowFilters.clicks)      parts.push('Clicks '      + RF_OP_LABELS[activeRowFilters.clicks.op]      + ' ' + activeRowFilters.clicks.val);
+  if (activeRowFilters.impressions) parts.push('Impressions ' + RF_OP_LABELS[activeRowFilters.impressions.op] + ' ' + activeRowFilters.impressions.val);
+  if (activeRowFilters.position)    parts.push('Position '    + RF_OP_LABELS[activeRowFilters.position.op]    + ' ' + activeRowFilters.position.val);
+  if (parts.length) {
+    badgeTxt.textContent = parts.join(' · ');
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// --- FETCH DATA (NEW) ---
 function runAdvancedFetch() {
   hideClearButton();
   const siteUrl = document.getElementById('siteValue').value;
   if (!siteUrl) return alert("Select a GSC property.");
+
+  const months = buildFetchMonthsFromDateMode_();
+  if (!months || months.length === 0) {
+    const mode = document.getElementById('fetchDateRangeMode')?.value || 'last_7';
+    if (mode === 'custom_month') return alert("Select Start Month (and optionally End Month).");
+    if (mode === 'custom_date') return alert("Select Start Date (and optionally End Date).");
+    return alert("Unable to determine date range. Please try again.");
+  }
+
   const searchType = document.getElementById('searchType').value;
-  const dateRange = document.getElementById('dateRange').value;
-  const startDate = document.getElementById('customStart').value;
-  const endDate = document.getElementById('customEnd').value;
   const checks = document.querySelectorAll('#groupByContainer input[type="checkbox"]');
   const groupBy = [...checks].filter(c => c.checked).map(c => c.value);
   const filters = collectFilters();
+
+  const rowFilters = activeRowFilters;
   const statusEl = document.getElementById('fetchStatus');
   const progWrap = document.getElementById('fetchProgressWrapper');
   const btn = document.getElementById('fetchBtn');
 
   statusEl.innerHTML = '';
   progWrap.style.display = 'block';
-  document.getElementById('fetchProgressText').textContent = 'Fetching data...';
   if (btn) btn.disabled = true;
+  fetchElapsedTimer = startElapsedTimer('fetchProgressText', fetchElapsedTimer, 'Fetching');
 
   requestAnimationFrame(() => {
     setTimeout(() => {
       google.script.run
         .withSuccessHandler(msg => {
+          fetchElapsedTimer = stopElapsedTimer(fetchElapsedTimer);
           progWrap.style.display = 'none'; if (btn) btn.disabled = false;
           statusEl.innerHTML = '<p style="color:green;">' + msg + '</p>';
           showClearButton();
         })
         .withFailureHandler(err => {
+          fetchElapsedTimer = stopElapsedTimer(fetchElapsedTimer);
           progWrap.style.display = 'none'; if (btn) btn.disabled = false;
           statusEl.innerHTML = '<p style="color:red;">' + (err.message || err) + '</p>';
           showClearButton();
         })
-        .runAdvancedFetchFromUI({ siteUrl, searchType, dateRange, startDate, endDate, groupBy, filters });
+        .runAdvancedFetchFromUI({ siteUrl, searchType, months, groupBy, filters, rowFilters });
     }, 0);
   });
 }
@@ -831,23 +1877,38 @@ function resetToolUI() {
   document.getElementById('urlSection').style.display = 'none';
   document.getElementById('fetchSection').style.display = 'none';
   document.getElementById('kwCountry').value = '';
+  const kwModeReset = document.getElementById('kwDateRangeMode');
+  if (kwModeReset) kwModeReset.value = 'last_7';
+  ['kwStartDate','kwEndDate','kwStartMonth','kwEndMonth'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  handleKwDateModeChange_();
+  kwModalKeywords = [];
+  document.getElementById('kwCountDisplay').style.display = 'none';
+  document.getElementById('kwModalInput').value = '';
+  urlModalUrls = [];
+  document.getElementById('urlCountDisplay').style.display = 'none';
+  document.getElementById('urlModalInput').value = '';
   document.getElementById('fetchPages').checked = false;
   document.getElementById('cannibalReport').checked = false;
   resetUrlTrackerUI();
   document.getElementById('searchType').value = 'web';
-  document.getElementById('dateRange').value = '28d';
-  document.getElementById('customDates').style.display = 'none';
-  document.getElementById('customStart').value = '';
-  document.getElementById('customEnd').value = '';
   document.querySelectorAll('#groupByContainer input').forEach(c => c.checked = false);
   document.getElementById('presetRegex').value = '';
   document.getElementById('filtersContainer').innerHTML = '';
+  ['rfClicks','rfImpressions','rfPosition'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  clearRowFilters();
   document.getElementById('groupByContainer').classList.remove('open');
   document.querySelector('.accordion-header').classList.remove('open');
   document.getElementById('kwStatus').innerHTML = '';
+  document.getElementById('resumeBtn').style.display = 'none';
+  document.getElementById('stopBtn').style.display = 'none';
+  _lastKwParams = null;
   document.getElementById('fetchStatus').innerHTML = '';
   document.getElementById('urlStatus').innerHTML = '';
   if (kwProgressTimer) clearInterval(kwProgressTimer);
+  urlElapsedTimer = stopElapsedTimer(urlElapsedTimer);
+  fetchElapsedTimer = stopElapsedTimer(fetchElapsedTimer);
   hideClearButton();
 }
 </script>

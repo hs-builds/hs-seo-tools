@@ -77,45 +77,6 @@ Before you begin, make sure you have:
    - Click **"Enable"**
    - Wait for confirmation
 
-### 2.3: Configure OAuth Consent Screen
-
-1. **Access OAuth Consent Screen**
-   - Go to **"APIs & Services" > "OAuth consent screen"**
-
-2. **Choose User Type**
-   - Select **"Internal"** if using Google Workspace (recommended)
-   - Select **"External"** if using personal Gmail account
-   - Click **"Create"**
-
-3. **Fill App Information**
-   - **App name**: `HS SEO Tools`
-   - **User support email**: Your email address
-   - **Developer contact information**: Your email address
-   - Leave other fields blank
-   - Click **"Save and Continue"**
-
-4. **Configure Scopes**
-   - Click **"Add or Remove Scopes"**
-   - Search and add these scopes:
-     ```
-     https://www.googleapis.com/auth/script.external_request
-     https://www.googleapis.com/auth/script.scriptapp
-     https://www.googleapis.com/auth/spreadsheets
-     https://www.googleapis.com/auth/webmasters
-     https://www.googleapis.com/auth/script.container.ui
-     ```
-   - Click **"Update"**
-   - Click **"Save and Continue"**
-
-5. **Test Users** (Only if External type)
-   - Click **"Add Users"**
-   - Enter your email address
-   - Click **"Add"**
-   - Click **"Save and Continue"**
-
-6. **Review and Finish**
-   - Click **"Back to Dashboard"**
-
 **✅ Google Cloud Project is ready!**
 
 ---
@@ -191,34 +152,6 @@ Now connect your copied sheet to the Google Cloud Project.
 
 ---
 
-## Step 5: Quick Test
-
-Let's make sure everything works:
-
-1. **Add Test Keywords**
-   - In Column A (starting Row 2), add some keywords:
-     ```
-     A2: seo tools
-     A3: google analytics
-     A4: search console
-     ```
-
-2. **Add Date Header**
-   - In Cell C1, enter: `2025-01`
-
-3. **Run Keyword Tracker**
-   - Click **HS SEO Tools > GSC**
-   - Select a GSC property from dropdown
-   - Leave country blank (or select one)
-   - Click **"Update Keyword Tracker"**
-
-4. **Verify Results**
-   - After 10-30 seconds, Column C populates with positions
-   - Green/red highlights show volatility (if historical data exists)
-
-**✅ HS SEO Tools is working!**
-
----
 
 ## 🔧 Alternative: Manual Installation
 
@@ -233,10 +166,9 @@ If you prefer to set up from scratch instead of copying the template:
    - Visit: https://github.com/hs-builds/hs-seo-tools
    - Download: `code.gs`, `GSC.gs`, `UI.html`, `ComingSoon.html`, `appsscript.json`
 
-2. **Create a new Google Apps Script project:**
-   - Go to https://script.google.com/
-   - Click **"New Project"**
-   - Name it "HS SEO Tools"
+2. **Create a Google Sheet:**
+   - Create new sheet at https://sheets.google.com
+   - Go to **Extensions > Apps Script**
 
 3. **Add each file:**
    - Delete default `Code.gs`
@@ -247,13 +179,7 @@ If you prefer to set up from scratch instead of copying the template:
 4. **Link to Google Cloud Project:**
    - Follow Step 3 above (Project Settings)
 
-5. **Create a Google Sheet:**
-   - Create new sheet at https://sheets.google.com
-   - Go to **Extensions > Apps Script**
-   - Copy all your Apps Script files here
-   - Refresh sheet
-
-6. **Authorize and test:**
+5. **Authorize and test:**
    - Follow Step 4 above
 
 </details>
@@ -263,13 +189,6 @@ If you prefer to set up from scratch instead of copying the template:
 ## 📖 Using the Tool
 
 ### Keyword Tracker Mode
-
-**Set up your sheet:**
-```
-Column A: Keywords (starting Row 2)
-Column B: (Optional - auto-populated with ranking URLs if enabled)
-Column C onwards: Date headers (e.g., "2025-01" or "01/01/2025-31/01/2025")
-```
 
 **Run the tracker:**
 1. Go to **HS SEO Tools > GSC**
@@ -287,12 +206,6 @@ Column C onwards: Date headers (e.g., "2025-01" or "01/01/2025-31/01/2025")
 - **Cannibalization Report**: Shows all pages competing for each keyword
 
 ### URL Tracker Mode
-
-**Set up:**
-```
-Sheet name: "URL Tracker"
-Column A: URLs (starting Row 3)
-```
 
 **Run:**
 1. Click **HS SEO Tools > GSC**
@@ -400,35 +313,6 @@ Column A: URLs (starting Row 3)
 - **Total: ~20 minutes**
 
 ---
-
-## 🆕 What's New in v2.0
-
-If you're upgrading from v1.0, here are the major improvements:
-
-- 🔄 **Auto-Resume** - Continue after interruptions
-- 📊 **Multi-Month Tracking** - 1-12 months in one run
-- 🔍 **URL Inspection** - Last Crawl + Indexation Status
-- ⚙️ **Custom Metrics** - Pick exactly what you need
-- 🎯 **Row Filtering** - Filter before export
-- 📋 **Better Reports** - Improved cannibalization view
-- 🎨 **New UI** - Minimal black/white design
-
-[See complete changelog →](CHANGELOG.md)
-
----
-
-## 📚 Next Steps
-
-Now that installation is complete:
-
-1. ✅ Read the [Usage Guide](README.md#usage) for detailed walkthroughs
-2. ✅ Check out [Use Cases](README.md#use-cases) for real-world examples
-3. ✅ Join the discussion in [GitHub Issues](https://github.com/hs-builds/hs-seo-tools/issues)
-4. ✅ Star the repository if this helped you!
-
----
-
-## 📞 Getting Help
 
 If you're stuck:
 

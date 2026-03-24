@@ -54,52 +54,7 @@ When multiple pages rank for the same keyword, Google Search Console shows you a
 
 ## 🚀 Installation
 
-### Prerequisites
-
-1. **Google Account** with Google Sheets access
-2. **Google Search Console** access to the property you want to track
-3. **Google Cloud Project** (free - we'll set this up)
-
-### Step 1: Create a Google Cloud Project
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Click **"Create Project"**
-3. Enter project name (e.g., "HS SEO Tools")
-4. Click **"Create"**
-
-### Step 2: Enable Required APIs
-
-1. In your Google Cloud Project, go to **"APIs & Services" > "Library"**
-2. Search for and enable:
-   - **Google Search Console API**
-
-### Step 3: Create a Google Sheet
-
-1. Create a new Google Sheet
-2. Go to **Extensions > Apps Script**
-3. Replace the code with the scripts from this repository (or link to your deployed Apps Script project)
-4. Refresh the Google Sheet
-5. You should now see **"HS SEO Tools"** in the top menu
-
-3. **Add the files:**
-   - Delete the default `Code.gs` file
-   - Click **"+"** next to Files
-   - Add each file from the repository:
-     - `code.gs` (Script file)
-     - `GSC.gs` (Script file)
-     - `UI.html` (HTML file)
-     - `ComingSoon.html` (HTML file)
-   - Click the **Settings** icon (⚙️)
-   - Check **"Show appsscript.json"** in manifest file
-   - Replace `appsscript.json` content with the one from this repo
-
-4. **Link to Google Cloud Project:**
-   - In Apps Script, click **Project Settings** (⚙️)
-   - Scroll to **"Google Cloud Platform (GCP) Project"**
-   - Click **"Change project"**
-   - Enter your GCP project number (found in GCP Console > Dashboard)
-   - Click **"Set project"**
-   - Click the **Save** icon (💾) 
+Refer this guide - https://github.com/hs-builds/hs-seo-tools/blob/main/Installation.md
 
 ## 📖 Usage
 

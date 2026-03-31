@@ -70,12 +70,22 @@ Before you begin, make sure you have:
    - Click **"Enable"**
    - Wait for confirmation
 
-3. **Enable Google Sheets API**
-   - Click **"APIs & Services" > "Library"** again
-   - Search for: `Google Sheets API`
-   - Click on it
-   - Click **"Enable"**
-   - Wait for confirmation
+3. **Configure OAuth Consent Screen & Test Users (Crucial!)**
+   - Go to OAuth Consent Screen
+   - In the left sidebar, click "APIs & Services" > "OAuth consent screen"
+   - Select "External" (if using a standard Gmail account) and click "Create"
+  
+4. **Fill in App Information**
+   - App name: `HS SEO Tools`
+   - User support email: Select your email address
+   - Developer contact information: Type your email address
+   - Click "Save and Continue" at the bottom. 
+
+5. **Add Yourself as a Test User**
+   - On the "Test users" step, click "+ ADD USERS"
+   - Type in the Google account email you are currently using.
+   - Click "Add", then click "Save and Continue"
+   - ⚠️ Important: If you skip this step, you will get an "Error 403: access_denied" when trying to run the tool!
 
 **✅ Google Cloud Project is ready!**
 

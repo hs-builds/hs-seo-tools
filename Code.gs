@@ -3,6 +3,7 @@ function onOpen() {
   ui.createMenu("HS SEO Tool")
     .addItem("GA4", "showGA4Sidebar")
     .addItem("GSC", "showGscSidebar")
+    .addItem("Ads Volume", "showAdsSidebar")
     .addSeparator()
     .addItem("Page Size Checker", "showSizeCheckerSidebar")
     .addToUi();
@@ -20,8 +21,8 @@ function showGscSidebar() {
   SpreadsheetApp.getUi().showSidebar(html);
 }
 
-function showSizeCheckerSidebar() {
-  const html = HtmlService.createHtmlOutputFromFile("SizeChecker")
-    .setTitle("Bulk Page Size Checker");
+function showAdsSidebar() {
+  const html = HtmlService.createHtmlOutputFromFile("ad")
+    .setTitle("Keyword Volume");
   SpreadsheetApp.getUi().showSidebar(html);
 }

@@ -7,301 +7,73 @@ A powerful, free Google Sheets add-on that solves Google Search Console's averag
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/hs-builds/hs-seo-tools/issues)
 [![Version](https://img.shields.io/badge/version-3.0.0-black)](https://github.com/hs-builds/hs-seo-tools/releases)
 
-## 🎯 The Problem This Solves
-
-When multiple pages rank for the same keyword, Google Search Console shows you an **average position** across all pages. This creates:
-
-- ❌ Misleading performance data (you think you're at #10, but you're actually at #2)
-- ❌ Hidden cannibalization issues
-- ❌ False ranking drop alerts
-- ❌ Wasted optimization efforts
-
-**Example:**
-- Your main page ranks at position **2.1** (150 impressions)
-- Old blog post ranks at position **18.5** (25 impressions)
-- **GSC shows:** Position **10.3** (misleading average!)
-- **HS SEO Tools shows:** Position **2.1** (actual best page)
-
 ## ✨ Features
 
 ### 🔵 GA4 Analytics Module *(New in v3.0)*
-- **7-tab interface** covering all GA4 data needs:
-  - **Traffic** — Sessions, users, bounce rate, engagement; group by Channel, Source, Medium, Campaign; filter by channel; optional daily breakdown
-  - **Audience** — Country, device, OS, browser breakdowns
-  - **Pages** — Top pages by views, entrances, scroll depth, time on page
-  - **Events** — Custom event tracking with counts and values
-  - **Ecommerce** — Revenue, transactions, conversion rate, ROAS
-  - **LLM** — AI/LLM referral traffic (ChatGPT, Perplexity, Gemini, Claude, etc.)
-  - **UTM** — Full UTM campaign parameter breakdown
-- **Flexible date ranges**: Last 7/28/30/90 days, Last 6/12 months, Custom Date/Month
-- **Metric & dimension pickers** with accordion UI
-- **Key events / conversions** as optional extra columns
-- **Channel filter** for organic-only or campaign-specific exports
-- Output to dedicated `GA4 Traffic`, `GA4 Pages`, etc. sheet tabs
+- **7-Tab Coverage**: One sidebar for your entire GA4 data stack — Traffic, Audience, Pages, Events, Ecommerce, LLM, and UTM
+- **Traffic Analysis**: Pull sessions, users, bounce rate, engaged sessions, and avg. session duration; group by Channel, Source, Medium, or Campaign in one click
+- **Audience Insights**: Break down your audience by country, device category, operating system, and browser
+- **Page Performance**: Identify your top pages by views, entrances, scroll depth, and time on page
+- **Event Tracking**: Export any custom GA4 event with its count and value directly into Sheets
+- **Ecommerce Reporting**: Revenue, transactions, conversion rate, and ROAS without leaving Sheets
+- **LLM Traffic Detection**: See exactly how much traffic you’re getting from ChatGPT, Perplexity, Gemini, Claude, and other AI tools
+- **UTM Campaign Reporting**: Full UTM breakdown — source, medium, campaign, content, and term in one export
+- **Flexible Date Ranges**: Last 7 / 28 / 30 / 90 days, Last 6 / 12 months, or fully custom date / month range
+- **Channel Filter**: Isolate organic, paid, referral, or any specific channel without writing a filter manually
+- **Daily Breakdown Mode**: Add a Date column to turn any report into a time-series dataset
+- **Key Events as Columns**: Optionally pull conversion counts alongside any metric for a complete picture
+- **Accordion UI**: Clean metric and dimension pickers that stay out of the way until you need them
+- **Dedicated Output Tabs**: Results written to named sheet tabs (`GA4 Traffic`, `GA4 Pages`, etc.) — never overwrites your raw data
 
 ### 🟡 Google Ads Module *(New in v3.0)*
-- **Keyword Volume** — Bulk search volume for up to 5,000 keywords per call
-  - Avg Monthly Searches, Competition, Competition Index, Low Bid, High Bid
-  - Historical data: Past 3, 6, 12, 24 months or custom date range
-  - Local currency formatting (₹, £, €, ¥, AU$, CA$, etc.)
-- **KW Magic Tool** — Keyword research from a seed keyword
-  - Generates hundreds of keyword ideas via Google Ads `generateKeywordIdeas` API
-  - Full metrics: search volume, competition, bids
-  - Historical monthly breakdown option
-- **13 countries + 12 languages** out of the box
-- **Multi-account MCC support** — load all sub-accounts with one click
-- **Credentials saved per session** via collapsible API Credentials panel
+- **Bulk Keyword Volume**: Fetch search volume for up to 5,000 keywords in a single API call — no manual lookups
+- **Full Metrics Set**: Avg Monthly Searches, Competition, Competition Index, Low Bid, High Bid for every keyword
+- **KW Magic Tool**: Enter one seed keyword and generate hundreds of related keyword ideas instantly via the Google Ads `generateKeywordIdeas` API
+- **Historical Monthly Data**: Choose Past 3, 6, 12, or 24 months — or set a custom start/end month — to pull month-by-month search trend data
+- **Local Currency Formatting**: Bid estimates automatically display in the correct local currency (₹ INR, £ GBP, € EUR, ¥ JPY, AU$, CA$, and more) based on your selected country
+- **Multi-Account MCC Support**: Load all ENABLED sub-accounts under your Manager Account with one click; switch between clients without re-entering credentials
+- **13 Countries + 12 Languages**: India, US, UK, Australia, Canada, Germany, France, UAE, and more — covered out of the box
+- **Credentials Saved Per Session**: Enter your Developer Token and MCC ID once in the collapsible ⚙️ API Credentials panel — they persist until you close the sidebar
+- **Direct API Integration**: Talks directly to the Google Ads API v24 — no third-party tools, no data leaving your account
 
 ### 🎯 Smart Keyword Tracker
-- **Intelligent Position Calculation**: Shows your best-performing page's actual rank (not GSC averages)
-- **Cannibalization Detection**: Automatically identifies when multiple pages compete for the same keyword
-- **Historical Tracking**: Unlimited keywords across any date range
-- **Volatility Alerts**: Auto-highlights ranking changes >5 positions (green = up, red = down)
-- **Country-Specific Tracking**: Track rankings by country for international SEO
-- **Ranking URL Fetcher**: Automatically populates the primary ranking URL for each keyword
+- **Intelligent Position Calculation**: Shows your best-performing page’s actual rank — not the misleading average GSC shows when multiple pages rank for the same keyword
+- **Cannibalization Detection**: Automatically identifies when multiple pages compete for the same keyword and generates a dedicated Cannibalization Report sheet
+- **Historical Tracking**: Track unlimited keywords across any date range with no row limits
+- **Volatility Alerts**: Auto-highlights ranking changes >5 positions (green = improved, red = dropped) so you spot opportunities and losses instantly
+- **Country-Specific Tracking**: Filter by country to track rankings in specific markets for international SEO
+- **Ranking URL Fetcher**: Automatically populates Column B with the primary ranking URL for each keyword — no manual lookup needed
+- **Auto-Resume on Timeout**: Checkpoint-based architecture saves progress after every month; a Resume button appears if the script times out so you never lose work
 
 ### 📈 URL Performance Tracker
-- Monitor specific landing pages over time
-- Track clicks, impressions, CTR, and average position
-- Last Crawl Date and Indexation Status via URL Inspection API
-- Multi-month tracking in a single run
-- Country and search type filtering
-- Perfect for measuring content update impact
+- **Monitor Landing Pages Over Time**: Track any set of URLs across multiple months in a single run — 75% faster than running one month at a time
+- **Full Metric Suite**: Clicks, Impressions, CTR, and Average Position for every URL in your list
+- **Last Crawl Date**: See exactly when Googlebot last crawled each URL via the URL Inspection API
+- **Indexation Status**: Instantly flag which URLs are indexed and which are not — at scale
+- **Customizable Metrics**: Choose exactly which metrics to export; skip what you don’t need for 60% faster runs
+- **Server-Side Row Filtering**: Filter results before they’re written to the sheet — use operators like ≥, ≤, =, ≠ on Clicks, Impressions, or Position
+- **Country and Search Type Filtering**: Scope data to a specific country or search type (Web, Image, Video, News)
+- **Multi-Month in One Run**: Select 1–12 months simultaneously; the tool processes and writes all of them in sequence automatically
 
 ### 📊 Advanced GSC Data Export
-- **Unlimited Dimension Combinations**: Query + Page + Country + Device + Date + Search Appearance
-- **8 Built-in Regex Presets**:
-  - Long-tail keywords (5+ words)
-  - How-to queries
-  - Question-based searches
-  - Commercial intent keywords
-  - Comparison searches
-  - Local intent queries
-  - Freshness queries
-  - Non-English characters
-- **Advanced Filtering**: Custom regex support with multiple filter combinations
-- **All Search Types**: Web, Image, Video, News
-- **Handles Large Datasets**: Automatic pagination for 25,000+ rows
+- **Unlimited Dimension Combinations**: Query, Page, Country, Device, Date, and Search Appearance — combine any of them freely
+- **8 Built-in Regex Presets**: One-click filters for Long-tail (5+ words), How-to, Questions, Commercial intent, Comparisons, Local intent, Freshness queries, and Non-English characters
+- **Custom Regex Filtering**: Write your own regex patterns and stack multiple filters in a single export
+- **All Search Types**: Web, Image, Video, and News — all supported
+- **Handles 25,000+ Rows**: Automatic pagination handles large datasets without any manual intervention
+- **6-Operator Row Filtering**: Filter results with =, ≠, >, ≥, <, ≤ on Clicks, Impressions, or Position before writing to the sheet
+
+### ⚡ Instant Indexing Module
+- **One-Click URL Submission**: Submit any URL to Google’s indexing queue directly from Sheets — no Search Console dashboard needed
+- **Bulk Submissions**: Paste a list of URLs and submit them all in one run — ideal for new content, redirects, and canonical changes
+- **Status Check**: See the current indexing status of any URL without leaving your spreadsheet
+- **Notification API Integration**: Uses Google’s Indexing API (originally for job postings) to trigger crawl requests — one of the fastest ways to get pages indexed
+- **Progress Tracking**: Real-time status updates as each URL is submitted, with success and error reporting per URL
+- **Handles Large Batches**: Submit dozens of URLs in sequence with built-in rate limiting to stay within API quotas
 
 ## 🚀 Installation
 
 Refer this guide - https://github.com/hs-builds/hs-seo-tools/blob/main/Installation.md
-
-## 📖 Usage
-
-### Keyword Tracker Mode
-
-1. **Set up your sheet:**
-   ```
-   Column A: Keywords (starting from Row 2)
-   Column B: (Optional - will be auto-populated with ranking URLs if enabled)
-   Column C onwards: Date headers (e.g., "2025-01", "2025-02", or "01/01/2025-31/01/2025")
-   ```
-
-2. **Run the tracker:**
-   - Go to **HS SEO Tools > GSC**
-   - Select your GSC property
-   - Choose date range
-   - Enable options:
-     - ☑️ Fetch Ranking URLs (populates Column B)
-     - ☑️ Generate Cannibalization Report
-   - Click **"Update"**
-
-3. **Interpret results:**
-   - **Green cells**: Ranking improved >5 positions
-   - **Red cells**: Ranking dropped >5 positions
-   - **Numbers**: Actual position of best-performing page
-   - **Cannibalization Report sheet**: Shows all pages competing for each keyword
-
-### URL Tracker Mode
-
-1. **Set up your sheet:**
-   ```
-   Sheet name: "URL Tracker"
-   Column A: URLs (starting from Row 2)
-   ```
-
-2. **Run the tracker:**
-   - Go to **HS SEO Tools > GSC**
-   - Switch to **"URL Tracker"** tab
-   - Select GSC property
-   - Choose date range
-   - Click **"Update"**
-
-3. **Results:**
-   - Clicks, Impressions, CTR, and Average Position for each URL
-
-### Advanced GSC Export Mode
-
-1. **Access:**
-   - Go to **HS SEO Tools > GSC**
-   - Switch to **"Advanced"** tab
-
-2. **Configure:**
-   - Select GSC property
-   - Choose search type (Web, Image, Video, News)
-   - Select date range
-   - Check dimensions to group by (Query, Page, Country, Device, etc.)
-   - Add filters (optional):
-     - Use regex presets for common patterns
-     - Or add custom filters
-
-3. **Export:**
-   - Click **"Fetch Data"**
-   - Results appear in "GSC Data" sheet
-
-**Regex Preset Examples:**
-- **Long-tail**: Finds keywords with 5+ words
-- **Commercial**: Finds "best", "top", "vs", "review" keywords
-- **Questions**: Finds "how", "what", "why" queries
-- **Local**: Finds "near me", "nearby" searches
-
-## 📊 Use Cases
-
-### Finding Quick Wins
-```
-Advanced Export:
-- Dimension: Query + Page
-- Filter: Position between 11-20
-- Filter: Impressions >100
-→ Result: Keywords on page 2 with high visibility (easy ranking opportunities)
-```
-
-### Content Gap Analysis
-```
-Advanced Export:
-- Regex Preset: "Questions"
-- Dimension: Query
-- Sort by: Impressions (descending)
-→ Result: Question queries with high search volume (FAQ content ideas)
-```
-
-### Cannibalization Audit
-```
-Keyword Tracker:
-- Enable "Cannibalization Report"
-- Run on all keywords
-→ Result: Detailed report showing competing pages for each keyword
-```
-
-### International SEO Tracking
-```
-Keyword Tracker:
-- Country filter: "US"
-- Track same keywords with different country filters
-→ Result: Compare rankings across different markets
-```
-
-### Mobile vs Desktop Performance
-```
-Advanced Export:
-- Dimensions: Query + Device
-- Group by: Device
-→ Result: See which keywords perform better on mobile vs desktop
-```
-
-## 🎨 Features in Detail
-
-### Smart Position Algorithm
-
-The tool uses a sophisticated algorithm to determine the "true" ranking:
-
-1. **Calculate total impressions** across all pages for the keyword
-2. **Set threshold**: Pages must have ≥20% of total impressions (minimum 5)
-3. **Filter significant pages**: Only pages meeting the threshold
-4. **Select best position**: Lowest position among significant pages
-
-**Why this works:**
-- Filters out noise from pages with 1-2 impressions
-- Focuses on pages actually getting visibility
-- Shows the position that matters for your business
-
-### Volatility Detection
-
-Automatically highlights significant ranking changes:
-- **>5 positions improvement**: Green background
-- **>5 positions drop**: Red background
-- Configurable threshold in code
-
-### Cannibalization Report
-
-When multiple pages compete for the same keyword, the report shows:
-- All competing pages with their URLs
-- Each page's position
-- Impression distribution
-- Click distribution
-- Sorted by impressions (highest first)
-
-## ⚙️ Configuration
-
-### Adjusting the Impression Threshold
-
-Default: 20% of total keyword impressions (minimum 5)
-
-To change, edit in `GSC.gs`:
-```javascript
-// Line ~393 and ~571
-const impressionThreshold = Math.max(5, totalImpressions * 0.20);
-// Change 0.20 to your preferred percentage (e.g., 0.15 for 15%)
-```
-
-### Adjusting Volatility Threshold
-
-Default: 5 positions
-
-To change, edit in `GSC.gs`:
-```javascript
-// Line ~706
-if (delta > 5) {
-// Change 5 to your preferred threshold
-```
-
-### Adding Custom Regex Presets
-
-Edit `UI.html`:
-```javascript
-const PRESET_REGEX = {
-  "5plus": "(\\S+\\s+){4,}\\S+",
-  "yourcustom": "your-regex-pattern-here"
-};
-
-// And add to dropdown:
-<option value="yourcustom">Your Custom Preset</option>
-```
-
-## 🔧 Troubleshooting
-
-### "Authorization required" error
-- Go to Apps Script editor
-- Run any function manually
-- Complete OAuth authorization flow
-
-### "GSC API error (403)"
-- Verify Google Search Console API is enabled in GCP
-- Check OAuth scopes in `appsscript.json`
-- Re-authorize the script
-
-### "Sheet not found" error
-- For Keyword Tracker: Sheet must be named "KW Tracker"
-- For URL Tracker: Sheet must be named "URL Tracker"
-- Case-sensitive!
-
-### Slow performance with large datasets
-- Process keywords in batches (500-1000 at a time)
-- Use fewer months for historical tracking
-- Split into multiple sheets if tracking 5000+ keywords
-
-### Missing ranking URLs (Column B empty)
-- Ensure "Fetch Ranking URLs" is checked
-- Verify GSC property has data for those keywords
-- Check that Column B exists in sheet
-
-## 📈 Performance
-
-- **500 keywords**: ~30 seconds
-- **1000 keywords**: ~60 seconds
-- **10,000 keywords**: ~10 minutes (with progress tracking)
-- **Advanced Export**: Up to 400,000 rows supported
 
 ## 🤝 Contributing
 
@@ -328,22 +100,10 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 Built to solve real SEO workflow challenges. Inspired by the limitations of Google Search Console's averaging logic.
 
-## 📞 Support
+## 📧 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/hs-seo-tools/issues)
+- **Issues**: [GitHub Issues](https://github.com/hs-builds/hs-seo-tools/issues)
 - **LinkedIn Article**: [Full Documentation](https://www.linkedin.com/pulse/stop-wasting-hours-copying-data-from-google-search-console-harsh-shah-zyppf/)
-
-## 🗺️ Roadmap
-
-- [x] GA4 integration for organic + conversion data *(v3.0)*
-- [x] Google Ads keyword research tool *(v3.0)*
-- [ ] Bulk URL analysis mode (1,000+ URLs)
-- [ ] Automated email reports
-- [ ] Multi-property comparison dashboard
-- [ ] Custom alert thresholds (per keyword)
-- [ ] Export to CSV/Excel
-- [ ] SERP feature tracking
-- [ ] Competitor keyword tracking
 
 ## 💰 Cost
 
@@ -366,17 +126,18 @@ If this tool helped you, please:
 
 ## 📸 Screenshots
 
-### Keyword Tracker
-![Keyword Tracker](screenshots/keyword-tracker.png)
-*Monthly rank tracking with volatility alerts*
+### GSC 
+<img width="1529" height="1321" alt="GSC Keyword Tracker Tool Screenshot" src="https://github.com/user-attachments/assets/93a8b1dd-d00c-43f8-a960-cf098fa8e1ae" />
 
-### Cannibalization Report
-![Cannibalization Report](screenshots/cannibalization-report.png)
-*Automatic detection of competing pages*
+### Instant Indexing
+<img width="1498" height="1141" alt="image" src="https://github.com/user-attachments/assets/e2de9891-44f8-4f6c-bd67-e463d6fe9d06" />
 
-### Advanced Export
-![Advanced Export](screenshots/advanced-export.png)
-*Unlimited dimension combinations with regex presets*
+### GA4 Traffic
+<img width="1538" height="1235" alt="GA4 Traffic" src="https://github.com/user-attachments/assets/623b8db9-c1bc-45c8-ac9c-aa2457baee10" />
+
+### Google Ads Keyword Checker
+<img width="1536" height="1207" alt="image" src="https://github.com/user-attachments/assets/2e8d844b-60f1-4fc2-933f-890f61c484e0" />
+
 
 ---
 

@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #000000;
+      --bg-color: #ffffff;
+      --surface: #ffffff;
+      --text-main: #202124;
+      --text-sub: #5f6368;
+      --border: #767676;
+      --radius: 2px;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body {
+      font-family: 'Figtree', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 13px;
+      color: var(--text-main);
+      background-color: var(--bg-color);
+      box-sizing: border-box;
+    }
+
+    #mainContent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 33px;
+      padding: 16px;
+      padding-bottom: 12px;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    select,
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    input[type="month"] {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-family: inherit;
+      background: var(--surface);
+      outline: none;
+      appearance: auto;
+    }
+
+    select:focus,
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+    }
+
+    button.primary-btn {
+      width: 100%;
+      background-color: #000;
+      color: #fff;
+      border: 1px solid #000;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 12px;
+      transition: background 0.2s;
+    }
+
+    button.primary-btn:hover {
+      background-color: #333;
+    }
+
+    button.primary-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-small {
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      background-color: #fff;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    .btn-small:hover {
+      background-color: #f1f3f4;
+    }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .checkbox-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0;
+      padding: 10px 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .checkbox-wrap:hover {
+      background: #f5f5f5;
+    }
+
+    .checkbox-wrap input {
+      margin: 0;
+      width: auto;
+      cursor: pointer;
+    }
+
+    .checkbox-wrap span {
+      font-size: 13px;
+      color: var(--text-main);
+      user-select: none;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      margin-top: 16px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-sub);
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      user-select: none;
+    }
+
+    .tab.active {
+      color: #000;
+      border-bottom: 2px solid #000;
+    }
+
+    .tab-content {
+      display: none;
+      border: 1px solid #ccc;
+      padding: 16px;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Modal */
+    .kw-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .kw-modal-overlay.open {
+      display: flex;
+    }
+
+    .kw-modal {
+      background: #fff;
+      border: 1px solid #000;
+      width: calc(100% - 32px);
+      max-width: 340px;
+      padding: 16px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .kw-modal-title {
+      font-weight: 600;
+      font-size: 13px;
+      color: #000;
+      margin: 0;
+    }
+
+    .kw-modal-hint {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin: 0;
+    }
+
+    .kw-modal textarea {
+      width: 100%;
+      box-sizing: border-box;
+      height: 180px;
+      border: 1px solid #000;
+      border-radius: 0;
+      padding: 10px;
+      font-size: 13px;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+    }
+
+    .kw-modal-counter {
+      font-size: 11px;
+      color: var(--text-sub);
+      text-align: right;
+      margin: 0;
+    }
+
+    .kw-modal-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .kw-modal-actions button {
+      flex: 1;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid #000;
+      cursor: pointer;
+      border-radius: 0;
+    }
+
+    .kw-modal-actions .btn-cancel {
+      background: #fff;
+      color: #000;
+    }
+
+    .kw-modal-actions .btn-cancel:hover {
+      background: #f5f5f5;
+    }
+
+    .kw-modal-actions .btn-add-kw {
+      background: #000;
+      color: #fff;
+    }
+
+    .kw-modal-actions .btn-add-kw:hover {
+      background: #333;
+    }
+
+    /* Progress */
+    .progress-container {
+      margin-top: 12px;
+      background: #e0e0e0;
+      border-radius: 0;
+      height: 6px;
+      overflow: hidden;
+      display: none;
+    }
+
+    .fetch-progress-bar {
+      height: 100%;
+      width: 40%;
+      background: #000;
+      position: relative;
+      animation: indeterminate 1.5s infinite ease-in-out;
+    }
+
+    @keyframes indeterminate {
+      0% {
+        left: -40%;
+      }
+
+      50% {
+        left: 30%;
+      }
+
+      100% {
+        left: 100%;
+      }
+    }
+
+    .month-range-label {
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    .app-footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 33px;
+      background: #fff;
+      border-top: 1px solid #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--text-sub);
+      box-sizing: border-box;
+      z-index: 999;
+    }
+
+    .app-footer a {
+      color: #000;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .app-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="mainContent">
+
+    <details
+      style="margin-bottom:12px; font-size:12px; border:1px solid var(--border); border-radius:var(--radius); background:var(--surface);">
+      <summary
+        style="padding:10px; font-weight:500; cursor:pointer; outline:none; user-select:none; color:var(--text-sub);">⚙️
+        API Credentials</summary>
+      <div style="padding:10px; border-top:1px solid var(--border);">
+        <label>Developer Token</label>
+        <input type="password" id="adsDevToken" value="-VPFNvG0Mc1qEByzU7l4jQ"
+          placeholder="Your Google Ads Developer Token" style="font-family:monospace;" />
+
+        <label>MCC Account ID</label>
+        <input type="text" id="adsMccId" value="177-004-3542" placeholder="e.g. 123-456-7890"
+          style="margin-bottom:0;" />
+      </div>
+    </details>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+      <label style="margin:0; font-size:14px; font-weight:400; color:var(--text-main);">Customer Account</label>
+      <button class="btn-small" onclick="loadAdsAccounts()" id="loadAccountsBtn"
+        style="padding:6px 10px; border:1px solid #000; font-size:12px; color:#000;">↻ Refresh</button>
+    </div>
+    <select id="adsCustomerId">
+      <option value="">Select an account...</option>
+    </select>
+
+    <label>Location / Country</label>
+    <select id="adsLocation">
+      <option value="2840" selected>United States</option>
+      <option value="2826">United Kingdom</option>
+      <option value="2356">India</option>
+      <option value="2124">Canada</option>
+      <option value="2036">Australia</option>
+      <option value="2276">Germany</option>
+      <option value="2250">France</option>
+      <option value="2392">Japan</option>
+      <option value="2724">Spain</option>
+      <option value="2380">Italy</option>
+      <option value="2076">Brazil</option>
+      <option value="2484">Mexico</option>
+      <option value="2528">Netherlands</option>
+    </select>
+
+    <label>Language</label>
+    <select id="adsLanguage">
+      <option value="1000" selected>English</option>
+      <option value="1003">Spanish</option>
+      <option value="1002">French</option>
+      <option value="1001">German</option>
+      <option value="1004">Italian</option>
+      <option value="1005">Japanese</option>
+      <option value="1009">Portuguese</option>
+      <option value="1010">Russian</option>
+      <option value="1014">Chinese (Simplified)</option>
+      <option value="1021">Hindi</option>
+      <option value="1012">Korean</option>
+      <option value="1019">Arabic</option>
+    </select>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('tab-vol')" id="btn-tab-vol">Keyword Volume</div>
+      <div class="tab" onclick="switchTab('tab-magic')" id="btn-tab-magic">KW Magic Tool</div>
+    </div>
+
+    <div id="tab-vol" class="tab-content active">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; margin-top:12px;">
+        <label style="margin:0; font-size:12px; font-weight:500; color:var(--text-sub);">Keywords</label>
+        <button class="btn-small" onclick="openVolumeModal()" style="font-size:11px; padding:4px 10px;">+ Add
+          Keywords</button>
+      </div>
+      <div id="volumeCountDisplay" style="font-size:11px; color:var(--text-sub); margin-bottom:12px; display:none;">
+        <span id="volumeCountText"></span>
+        <button onclick="openVolumeModal()"
+          style="background:none; border:none; color:#000; text-decoration:underline; cursor:pointer; font-size:11px; padding:0; margin-left:6px;">Edit</button>
+      </div>
+
+      <label>Historical Search Volume</label>
+      <select id="volumeHistoricOption" onchange="toggleCustomHistoric('volume')">
+        <option value="none" selected>Do not include historical data</option>
+        <option value="3">Past 3 months</option>
+        <option value="6">Past 6 months</option>
+        <option value="12">Past 12 months</option>
+        <option value="24">Past 24 months</option>
+        <option value="custom">Custom Range</option>
+      </select>
+
+      <div id="volumeCustomHistoricFields" style="display:none; margin-top:10px;">
+        <div style="margin-bottom:10px;">
+          <span class="month-range-label">Start Month</span>
+          <input type="month" id="volumeStartMonth" />
+        </div>
+        <div>
+          <span class="month-range-label">End Month</span>
+          <input type="month" id="volumeEndMonth" />
+        </div>
+      </div>
+
+      <button class="primary-btn" id="volumeBtn" onclick="runVolumeFetch()">Fetch Search Volume</button>
+
+      <div id="volumeProgressWrapper" style="display:none; margin-top:12px;">
+        <div id="volumeProgressText" style="font-size:11px; margin-bottom:4px; color:var(--text-sub);">Fetching...</div>
+        <div class="progress-container" style="display:block;">
+          <div class="fetch-progress-bar"></div>
+        </div>
+      </div>
+      <div id="volumeStatus" class="status"></div>
+    </div>
+
+    <div id="tab-magic" class="tab-content">
+      <label>Seed Keyword</label>
+      <input type="text" id="magicSeedKw" />
+
+      <label>Historical Search Volume</label>
+      <select id="magicHistoricOption" onchange="toggleCustomHistoric('magic')">
+        <option value="none" selected>Do not include historical data</option>
+        <option value="3">Past 3 months</option>
+        <option value="6">Past 6 months</option>
+        <option value="12">Past 12 months</option>
+        <option value="24">Past 24 months</option>
+        <option value="custom">Custom Range</option>
+      </select>
+
+      <div id="magicCustomHistoricFields" style="display:none; margin-top:10px;">
+        <div style="margin-bottom:10px;">
+          <span class="month-range-label">Start Month</span>
+          <input type="month" id="magicStartMonth" />
+        </div>
+        <div>
+          <span class="month-range-label">End Month</span>
+          <input type="month" id="magicEndMonth" />
+        </div>
+      </div>
+
+      <button class="primary-btn" id="magicBtn" onclick="runMagicFetch()">Fetch Keyword Ideas</button>
+
+      <div id="magicProgressWrapper" style="display:none; margin-top:12px;">
+        <div id="magicProgressText" style="font-size:11px; margin-bottom:4px; color:var(--text-sub);">Fetching Ideas...
+        </div>
+        <div class="progress-container" style="display:block;">
+          <div class="fetch-progress-bar"></div>
+        </div>
+      </div>
+      <div id="magicStatus" class="status"></div>
+    </div>
+
+  </div><!-- /mainContent -->
+
+  <!-- KEYWORD MODAL -->
+  <div id="volumeModalOverlay" class="kw-modal-overlay" onclick="handleVolumeModalOverlayClick(event)">
+    <div class="kw-modal">
+      <p class="kw-modal-title">Add Keywords</p>
+      <p class="kw-modal-hint">Paste keywords — one per line. Max 100 per batch (Google Ads API limit). Duplicates
+        removed automatically.</p>
+      <textarea id="volumeModalInput"
+        placeholder="e.g.&#10;fire rated glass&#10;bullet resistant glass&#10;glass partition"
+        oninput="updateVolumeCounter()"></textarea>
+      <p class="kw-modal-counter" id="volumeModalCounter">0 keywords</p>
+      <div class="kw-modal-actions">
+        <button class="btn-cancel" onclick="closeVolumeModal()">Cancel</button>
+        <button class="btn-add-kw" onclick="confirmVolumeKeywords()">Add Keywords</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-footer">
+    Made with ❤️ by&nbsp;&nbsp;<a href="https://www.linkedin.com/in/shah-harsh02/" target="_blank">HarsH</a>
+  </div>
+
+  <script>
+    let volumeModalKeywords = [];
+    let volumeElapsedTimer = null;
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+
+      document.getElementById(tabId).classList.add('active');
+      document.getElementById('btn-' + tabId).classList.add('active');
+    }
+
+    function openVolumeModal() {
+      const ta = document.getElementById('volumeModalInput');
+      ta.value = volumeModalKeywords.join('\n');
+      updateVolumeCounter();
+      document.getElementById('volumeModalOverlay').classList.add('open');
+      setTimeout(() => ta.focus(), 50);
+    }
+
+    function closeVolumeModal() {
+      document.getElementById('volumeModalOverlay').classList.remove('open');
+    }
+
+    function handleVolumeModalOverlayClick(e) {
+      if (e.target === document.getElementById('volumeModalOverlay')) closeVolumeModal();
+    }
+
+    function updateVolumeCounter() {
+      const lines = document.getElementById('volumeModalInput').value
+        .split('\n').map(l => l.trim()).filter(Boolean);
+      const unique = [...new Set(lines.map(l => l.toLowerCase()))].length;
+      document.getElementById('volumeModalCounter').textContent = unique + ' keyword' + (unique !== 1 ? 's' : '');
+    }
+
+    function confirmVolumeKeywords() {
+      const lines = document.getElementById('volumeModalInput').value
+        .split('\n').map(l => l.trim()).filter(Boolean);
+      const seen = new Set();
+      volumeModalKeywords = lines.filter(l => {
+        const key = l.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      const display = document.getElementById('volumeCountDisplay');
+      const countText = document.getElementById('volumeCountText');
+      if (volumeModalKeywords.length > 0) {
+        countText.textContent = volumeModalKeywords.length + ' keyword' + (volumeModalKeywords.length !== 1 ? 's' : '') + ' added';
+        display.style.display = 'block';
+      } else {
+        display.style.display = 'none';
+      }
+      closeVolumeModal();
+    }
+
+    function loadAdsAccounts() {
+      const devToken = document.getElementById('adsDevToken').value.trim();
+      const mccId = document.getElementById('adsMccId').value.trim();
+
+      if (!devToken) return alert("Enter your Developer Token first.");
+      if (!mccId) return alert("Enter your MCC Account ID first.");
+
+      const btn = document.getElementById('loadAccountsBtn');
+      const originalText = btn.textContent;
+      btn.textContent = 'Loading...';
+      btn.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function (accounts) {
+          const select = document.getElementById('adsCustomerId');
+          select.innerHTML = '<option value="">Select an account...</option>';
+          accounts.forEach(acc => {
+            const opt = document.createElement('option');
+            opt.value = acc.id;
+            opt.textContent = acc.name + ' (' + acc.id + ')' + (acc.manager ? ' [MCC]' : '');
+            select.appendChild(opt);
+          });
+          btn.textContent = originalText;
+          btn.disabled = false;
+        })
+        .withFailureHandler(function (err) {
+          alert(err.message || err);
+          btn.textContent = originalText;
+          btn.disabled = false;
+        })
+        .getAdsAccounts({ developerToken: devToken, mccId: mccId });
+    }
+
+    function startElapsedTimer(textElId, timerRef, label) {
+      const el = document.getElementById(textElId);
+      if (!el) return null;
+      const start = Date.now();
+      el.textContent = label + ' — 0s elapsed';
+      return setInterval(function () {
+        const sec = Math.floor((Date.now() - start) / 1000);
+        const m = Math.floor(sec / 60), s = sec % 60;
+        el.textContent = label + ' — ' + (m > 0 ? m + 'm ' : '') + s + 's elapsed';
+      }, 1000);
+    }
+
+    function stopElapsedTimer(timer) {
+      if (timer) clearInterval(timer);
+      return null;
+    }
+
+    function toggleCustomHistoric(tab) {
+      const selectVal = document.getElementById(tab + 'HistoricOption').value;
+      const fields = document.getElementById(tab + 'CustomHistoricFields');
+      if (fields) {
+        fields.style.display = (selectVal === 'custom') ? 'block' : 'none';
+      }
+    }
+
+    function initCustomMonths() {
+      const now = new Date();
+      const endYear = now.getFullYear();
+      const endMonth = String(now.getMonth() + 1).padStart(2, '0');
+
+      const startObj = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+      const startYear = startObj.getFullYear();
+      const startMonth = String(startObj.getMonth() + 1).padStart(2, '0');
+
+      const endStr = `${endYear}-${endMonth}`;
+      const startStr = `${startYear}-${startMonth}`;
+
+      const volStart = document.getElementById('volumeStartMonth');
+      const volEnd = document.getElementById('volumeEndMonth');
+      const magicStart = document.getElementById('magicStartMonth');
+      const magicEnd = document.getElementById('magicEndMonth');
+
+      if (volStart) volStart.value = startStr;
+      if (volEnd) volEnd.value = endStr;
+      if (magicStart) magicStart.value = startStr;
+      if (magicEnd) magicEnd.value = endStr;
+    }
+
+    function runVolumeFetch() {
+      const devToken = document.getElementById('adsDevToken').value.trim();
+      const mccId = document.getElementById('adsMccId').value.trim();
+      const customerId = document.getElementById('adsCustomerId').value;
+      const locationId = document.getElementById('adsLocation').value;
+      const locationEl = document.getElementById('adsLocation');
+      const locationName = locationEl.options[locationEl.selectedIndex].text;
+      const languageId = document.getElementById('adsLanguage').value;
+      const languageEl = document.getElementById('adsLanguage');
+      const languageName = languageEl.options[languageEl.selectedIndex].text;
+
+      const historyOption = document.getElementById('volumeHistoricOption').value;
+      const customStart = document.getElementById('volumeStartMonth').value;
+      const customEnd = document.getElementById('volumeEndMonth').value;
+
+      if (!devToken) return alert("Developer token is required.");
+      if (!mccId) return alert("MCC Account ID is required.");
+      if (!customerId) return alert("Please load and select a Customer Account.");
+      if (volumeModalKeywords.length === 0) return alert("Add at least one keyword.");
+      if (historyOption === 'custom') {
+        if (!customStart || !customEnd) {
+          return alert("Please select both start and end months for custom range.");
+        }
+      }
+
+      const progWrap = document.getElementById('volumeProgressWrapper');
+      const btn = document.getElementById('volumeBtn');
+      document.getElementById('volumeStatus').innerHTML = '';
+      progWrap.style.display = 'block';
+      if (btn) btn.disabled = true;
+      volumeElapsedTimer = startElapsedTimer('volumeProgressText', volumeElapsedTimer, 'Fetching');
+
+      google.script.run
+        .withSuccessHandler(msg => {
+          volumeElapsedTimer = stopElapsedTimer(volumeElapsedTimer);
+          progWrap.style.display = 'none';
+          if (btn) btn.disabled = false;
+          let htmlMsg = msg.replace(/\n/g, '<br>');
+          document.getElementById('volumeStatus').innerHTML =
+            `<p style="color:green; line-height:1.6; margin:0;">${htmlMsg}</p>`;
+        })
+        .withFailureHandler(err => {
+          volumeElapsedTimer = stopElapsedTimer(volumeElapsedTimer);
+          progWrap.style.display = 'none';
+          if (btn) btn.disabled = false;
+          document.getElementById('volumeStatus').innerHTML =
+            `<p style="color:red;">${err.message || err}</p>`;
+        })
+        .fetchKeywordVolumesFromUI({
+          developerToken: devToken,
+          mccId: mccId,
+          customerId: customerId,
+          locationId: locationId,
+          locationName: locationName,
+          languageId: languageId,
+          languageName: languageName,
+          keywords: volumeModalKeywords,
+          historyOption: historyOption,
+          customStart: customStart,
+          customEnd: customEnd
+        });
+    }
+
+    function runMagicFetch() {
+      const devToken = document.getElementById('adsDevToken').value.trim();
+      const mccId = document.getElementById('adsMccId').value.trim();
+      const customerId = document.getElementById('adsCustomerId').value;
+      const locationId = document.getElementById('adsLocation').value;
+      const locationEl = document.getElementById('adsLocation');
+      const locationName = locationEl.options[locationEl.selectedIndex].text;
+      const languageId = document.getElementById('adsLanguage').value;
+      const languageEl = document.getElementById('adsLanguage');
+      const languageName = languageEl.options[languageEl.selectedIndex].text;
+      const seedKw = document.getElementById('magicSeedKw').value.trim();
+
+      const historyOption = document.getElementById('magicHistoricOption').value;
+      const customStart = document.getElementById('magicStartMonth').value;
+      const customEnd = document.getElementById('magicEndMonth').value;
+
+      if (!devToken) return alert("Developer token is required.");
+      if (!mccId) return alert("MCC Account ID is required.");
+      if (!customerId) return alert("Please load and select a Customer Account.");
+      if (!seedKw) return alert("Please enter a seed keyword.");
+      if (historyOption === 'custom') {
+        if (!customStart || !customEnd) {
+          return alert("Please select both start and end months for custom range.");
+        }
+      }
+
+      const progWrap = document.getElementById('magicProgressWrapper');
+      const btn = document.getElementById('magicBtn');
+      document.getElementById('magicStatus').innerHTML = '';
+      progWrap.style.display = 'block';
+      if (btn) btn.disabled = true;
+      volumeElapsedTimer = startElapsedTimer('magicProgressText', volumeElapsedTimer, 'Fetching Ideas');
+
+      google.script.run
+        .withSuccessHandler(msg => {
+          volumeElapsedTimer = stopElapsedTimer(volumeElapsedTimer);
+          progWrap.style.display = 'none';
+          if (btn) btn.disabled = false;
+          let htmlMsg = msg.replace(/\n/g, '<br>');
+          document.getElementById('magicStatus').innerHTML =
+            `<p style="color:green; line-height:1.6; margin:0;">${htmlMsg}</p>`;
+        })
+        .withFailureHandler(err => {
+          volumeElapsedTimer = stopElapsedTimer(volumeElapsedTimer);
+          progWrap.style.display = 'none';
+          if (btn) btn.disabled = false;
+          document.getElementById('magicStatus').innerHTML =
+            `<p style="color:red;">${err.message || err}</p>`;
+        })
+        .fetchKeywordIdeasFromUI({
+          developerToken: devToken,
+          mccId: mccId,
+          customerId: customerId,
+          locationId: locationId,
+          locationName: locationName,
+          languageId: languageId,
+          languageName: languageName,
+          seedKw: seedKw,
+          historyOption: historyOption,
+          customStart: customStart,
+          customEnd: customEnd
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initCustomMonths();
+      if (document.getElementById('adsDevToken').value && document.getElementById('adsMccId').value) {
+        loadAdsAccounts();
+      }
+    });
+  </script>
+</body>
+
+</html>

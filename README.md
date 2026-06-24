@@ -1,10 +1,11 @@
-# HS SEO Tools - Google Search Console Integration for Google Sheets
+# HS SEO Tools — Google Search Console + GA4 + Google Ads for Google Sheets
 
-A powerful, free Google Sheets add-on that solves Google Search Console's averaging problem and provides advanced SEO data analysis capabilities.
+A powerful, free Google Sheets add-on that solves Google Search Console's averaging problem and provides advanced SEO, analytics, and keyword research capabilities.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Google Apps Script](https://img.shields.io/badge/Google%20Apps%20Script-4285F4?logo=google&logoColor=white)](https://script.google.com)
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/yourusername/hs-seo-tools/issues)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/hs-builds/hs-seo-tools/issues)
+[![Version](https://img.shields.io/badge/version-3.0.0-black)](https://github.com/hs-builds/hs-seo-tools/releases)
 
 ## 🎯 The Problem This Solves
 
@@ -23,6 +24,34 @@ When multiple pages rank for the same keyword, Google Search Console shows you a
 
 ## ✨ Features
 
+### 🔵 GA4 Analytics Module *(New in v3.0)*
+- **7-tab interface** covering all GA4 data needs:
+  - **Traffic** — Sessions, users, bounce rate, engagement; group by Channel, Source, Medium, Campaign; filter by channel; optional daily breakdown
+  - **Audience** — Country, device, OS, browser breakdowns
+  - **Pages** — Top pages by views, entrances, scroll depth, time on page
+  - **Events** — Custom event tracking with counts and values
+  - **Ecommerce** — Revenue, transactions, conversion rate, ROAS
+  - **LLM** — AI/LLM referral traffic (ChatGPT, Perplexity, Gemini, Claude, etc.)
+  - **UTM** — Full UTM campaign parameter breakdown
+- **Flexible date ranges**: Last 7/28/30/90 days, Last 6/12 months, Custom Date/Month
+- **Metric & dimension pickers** with accordion UI
+- **Key events / conversions** as optional extra columns
+- **Channel filter** for organic-only or campaign-specific exports
+- Output to dedicated `GA4 Traffic`, `GA4 Pages`, etc. sheet tabs
+
+### 🟡 Google Ads Module *(New in v3.0)*
+- **Keyword Volume** — Bulk search volume for up to 5,000 keywords per call
+  - Avg Monthly Searches, Competition, Competition Index, Low Bid, High Bid
+  - Historical data: Past 3, 6, 12, 24 months or custom date range
+  - Local currency formatting (₹, £, €, ¥, AU$, CA$, etc.)
+- **KW Magic Tool** — Keyword research from a seed keyword
+  - Generates hundreds of keyword ideas via Google Ads `generateKeywordIdeas` API
+  - Full metrics: search volume, competition, bids
+  - Historical monthly breakdown option
+- **13 countries + 12 languages** out of the box
+- **Multi-account MCC support** — load all sub-accounts with one click
+- **Credentials saved per session** via collapsible API Credentials panel
+
 ### 🎯 Smart Keyword Tracker
 - **Intelligent Position Calculation**: Shows your best-performing page's actual rank (not GSC averages)
 - **Cannibalization Detection**: Automatically identifies when multiple pages compete for the same keyword
@@ -34,6 +63,8 @@ When multiple pages rank for the same keyword, Google Search Console shows you a
 ### 📈 URL Performance Tracker
 - Monitor specific landing pages over time
 - Track clicks, impressions, CTR, and average position
+- Last Crawl Date and Indexation Status via URL Inspection API
+- Multi-month tracking in a single run
 - Country and search type filtering
 - Perfect for measuring content update impact
 
@@ -291,7 +322,7 @@ Contributions are welcome! Here's how you can help:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
@@ -304,14 +335,15 @@ Built to solve real SEO workflow challenges. Inspired by the limitations of Goog
 
 ## 🗺️ Roadmap
 
-- [ ] GA4 integration for conversion data
-- [ ] Bulk URL analysis mode
+- [x] GA4 integration for organic + conversion data *(v3.0)*
+- [x] Google Ads keyword research tool *(v3.0)*
+- [ ] Bulk URL analysis mode (1,000+ URLs)
+- [ ] Automated email reports
+- [ ] Multi-property comparison dashboard
 - [ ] Custom alert thresholds (per keyword)
 - [ ] Export to CSV/Excel
-- [ ] Automated email reports
-- [ ] Multi-property comparison
 - [ ] SERP feature tracking
-- [ ] Competitor tracking
+- [ ] Competitor keyword tracking
 
 ## 💰 Cost
 
@@ -350,4 +382,4 @@ If this tool helped you, please:
 
 **Built with ❤️ for the SEO community**
 
-*Made by [Your Name](https://linkedin.com/in/yourprofile) | [LinkedIn Article](https://www.linkedin.com/pulse/stop-wasting-hours-copying-data-from-google-search-console-harsh-shah-zyppf/)*
+*Made by [HarsH Shah](https://www.linkedin.com/in/shah-harsh02/) | [LinkedIn Article](https://www.linkedin.com/pulse/stop-wasting-hours-copying-data-from-google-search-console-harsh-shah-zyppf/)*

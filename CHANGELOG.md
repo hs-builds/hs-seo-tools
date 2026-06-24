@@ -5,7 +5,80 @@ All notable changes to HS SEO Tools will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-06-24
+
+### 🎉 Major Features Added
+
+#### GA4 Analytics Module (Brand New Tool)
+- **Full Google Analytics 4 integration** via the GA4 Data API
+- **7-tab interface** covering the complete GA4 data landscape:
+  - **Traffic** — Sessions, users, bounce rate, engaged sessions, avg. session duration; group by Channel, Source, Medium, Campaign, or Source/Medium; filter by channel; optional daily breakdown + custom event columns
+  - **Audience** — Demographics and device breakdowns (country, device category, OS, browser)
+  - **Pages** — Top page performance by views, entrances, time on page, scroll depth
+  - **Events** — Custom event tracking with event count and event value
+  - **Ecommerce** — Revenue, transactions, conversion rate, ROAS, items sold
+  - **LLM** — AI/LLM referral traffic analysis (ChatGPT, Perplexity, Gemini, etc.)
+  - **UTM** — Campaign UTM parameter tracking (source, medium, campaign, content, term)
+- **Shared property selector** with search — select your GA4 property once, use across all tabs
+- **Flexible date ranges** per tab: Last 7/28/30/90 days, Last 6/12 months, Custom Date, Custom Month
+- **Accordion-based metric and dimension pickers** to keep the UI clean
+- **Channel filter** for organic-only or channel-specific exports
+- **Daily breakdown mode** — adds a Date column for time-series analysis
+- **Key events / conversion columns** — optionally pull conversion counts alongside any metric
+- Output written to dedicated sheet tabs per module (e.g. `GA4 Traffic`, `GA4 Pages`)
+
+#### Google Ads Module (Brand New Tool)
+- **Direct Google Ads API integration** (v24) via OAuth2 + Developer Token + MCC Account
+- Credentials stored via a collapsible `⚙️ API Credentials` section — enter once per session
+- **2-tab interface**:
+  - **Keyword Volume** — Bulk search volume lookup for up to 5,000 keywords per call using `generateKeywordHistoricalMetrics`; outputs Avg Monthly Searches, Competition, Competition Index, Low Bid, High Bid
+  - **KW Magic Tool** — Seed keyword research using `generateKeywordIdeas`; generates hundreds of related keyword ideas with full metrics
+- **Historical monthly data** — flexible options: Past 3, 6, 12, 24 months or Custom Range (start/end month pickers)
+- **Local currency formatting** — bid estimates automatically displayed in the correct currency based on selected country (₹, £, €, ¥, etc.)
+- **Multi-account support** — load all ENABLED accounts under your MCC with a single click; select sub-account to query
+- **13 countries + 12 languages** supported out of the box
+- Output written to `Keyword Volume` and `KW Magic Tool` sheet tabs respectively
+
+### 📋 Improved Features
+
+#### Menu Structure
+- Menu now includes all three tools: **GA4**, **GSC**, and **Google Ads**
+- Clean separator between core tools and utilities
+
+### 🔧 Technical Changes
+
+#### Google Ads API
+- API version: `v24`
+- Endpoint: `generateKeywordHistoricalMetrics` for volume lookups; `generateKeywordIdeas` for research
+- Dynamic `yearMonthRange` calculation via shared `buildHistoricalMetricsOptions_()` helper
+- Batch size: 5,000 keywords per API call (within quota)
+- 600ms sleep between batches to respect rate limits
+
+#### GA4 Data API
+- Uses `runReport` and `batchRunReports` for efficient multi-metric pulls
+- Handles pagination for large property datasets
+- Property list auto-loaded via `listAccountSummaries`
+
+### ⚠️ Breaking Changes
+
+**None** — v3.0 maintains 100% backward compatibility with v1.0 and v2.0
+
+- All existing GSC sheets and formulas unaffected
+- Upgrade: add new files, update `Code.gs`, refresh sheet
+
+### 🔜 Coming in v4.0
+
+Based on community feedback:
+- Bulk URL analysis (1,000+ URLs at once)
+- Automated email reports
+- Multi-property comparison dashboard
+- SERP feature tracking
+- Competitor keyword tracking
+
+---
+
 ## [2.0.0] - 2025-03-22
+
 
 ### 🎉 Major Features Added
 
@@ -200,12 +273,60 @@ Based on community feedback:
 
 ## Version History
 
+- **3.0.0** - Brand new GA4 Analytics Module (7 tabs) + Google Ads Module (Keyword Volume + KW Magic Tool)
 - **2.0.0** - Major update with auto-resume, multi-month tracking, URL inspection, filtering, and UI overhaul
 - **1.0.0** - Initial public release
 
 ---
 
 ## Migration Guide
+
+### Upgrading from v2.0 to v3.0
+
+**Time Required:** 5 minutes
+
+**Steps:**
+
+1. **Backup your current sheets** (optional but recommended)
+   - Make a copy of your Google Sheets with existing data
+
+2. **Add new code files:**
+   - In Apps Script editor, add the following new files:
+     - `GA4.html` — GA4 Analytics Module UI
+     - `ga4.gs` — GA4 Analytics Module backend
+     - `ad.html` — Google Ads Module UI
+     - `ads.gs` — Google Ads Module backend
+
+3. **Update existing file:**
+   - Replace `Code.gs` to add the new menu items for GA4 and Google Ads
+
+4. **Enable new APIs in Google Cloud Console:**
+   - `Google Analytics Data API` (for GA4 module)
+   - `Google Ads API` (for Google Ads module — also requires a Developer Token from your Google Ads Manager Account)
+
+5. **Save and refresh:**
+   - Click Save (💾) in Apps Script
+   - Refresh your Google Sheet (F5)
+   - New "GA4" and "Google Ads" menu items will appear
+
+**What's Preserved:**
+✅ All existing GSC keyword tracking data
+✅ All existing URL tracker data
+✅ All sheet structures and formulas
+✅ All GSC module functionality unchanged
+
+**What's New:**
+🆕 GA4 Analytics sidebar with 7 tabs
+🆕 Google Ads Keyword Volume tool
+🆕 Google Ads KW Magic Tool (keyword research)
+🆕 Local currency formatting for bid estimates
+
+**No Action Required for GSC:**
+- Your GSC sheets automatically work with v3.0
+- No data migration needed
+- All existing formulas unaffected
+
+---
 
 ### Upgrading from v1.0 to v2.0
 

@@ -46,12 +46,11 @@
       box-sizing: border-box;
     }
 
-    #kwSection, #urlSection, #fetchSection {
+    #overviewSection, #kwSection, #urlSection, #fetchSection {
       max-height: calc(100vh - 220px);
       overflow-y: auto;
     }
 
-    /* Form Elements */
     label {
       display: block;
       font-weight: 500;
@@ -79,7 +78,6 @@
       appearance: auto;
     }
 
-    /* Remove number input spinners */
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
@@ -89,7 +87,6 @@
       box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
     }
 
-    /* Buttons */
     button.primary-btn {
       width: 100%;
       background-color: #000;
@@ -127,7 +124,6 @@
       border: 1px solid #000 !important;
     }
 
-    /* Cards */
     .section {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -137,19 +133,28 @@
       box-shadow: var(--shadow-sm);
     }
 
-    /* Tabs */
-    .mode-switch {
-      display: flex;
-      background: transparent;
-      padding: 0;
-      margin: 16px 0 0 0;
-      border-bottom: 1px solid #000;
+    .tab-nav-wrapper {
+      position: relative; display: flex; align-items: stretch;
+      border-bottom: 1px solid #000; margin: 16px 0 0 0; background: #fff;
     }
+    .tab-arrow {
+      flex: 0 0 22px; width: 22px; background: #fff; border: none;
+      border-right: 1px solid #e0e0e0; cursor: pointer;
+      color: #555; font-size: 13px; display: flex; align-items: center;
+      justify-content: center; padding: 0; transition: background 0.15s;
+      z-index: 2; user-select: none;
+    }
+    .tab-arrow:last-child { border-right: none; border-left: 1px solid #e0e0e0; }
+    .tab-arrow:hover { background: #f0f0f0; color: #000; }
+    .mode-switch {
+      display: flex; flex: 1; overflow-x: hidden; scrollbar-width: none; gap: 0; scroll-behavior: smooth; padding: 0; background: transparent;
+    }
+    .mode-switch::-webkit-scrollbar { display: none; }
     .mode-switch input[type="radio"] { display: none; }
     .mode-switch label {
-      flex: 1;
+      flex: 0 0 auto;
       text-align: center;
-      padding: 8px;
+      padding: 8px 14px;
       margin: 0;
       cursor: pointer;
       font-size: 12px;
@@ -159,6 +164,7 @@
       border: none;
       background: transparent;
       position: relative;
+      white-space: nowrap;
     }
     .mode-switch input:checked + label {
       background: transparent;
@@ -169,7 +175,6 @@
       border-bottom: 2px solid #000;
     }
 
-    /* Site Dropdown */
     .site-wrapper { margin-bottom: 16px; }
     .site-dropdown {
       position: relative;
@@ -223,7 +228,6 @@
     }
     .site-item:hover { background-color: #f0f0f0; color: #000; }
 
-    /* Accordion */
     .accordion-header {
       display: flex; justify-content: space-between; align-items: center;
       padding: 10px 12px; background: #f5f5f5; border-radius: 0;
@@ -250,7 +254,6 @@
     }
     .accordion-header.open .accordion-arrow { transform: rotate(180deg); }
 
-    /* Filters */
     .filters-header {
       display: flex; justify-content: space-between; align-items: center;
       margin-top: 16px; margin-bottom: 8px;
@@ -272,7 +275,6 @@
     }
     .filter-remove:hover { color: var(--danger); }
 
-    /* Clickable Checkbox Rows */
     .checkbox-wrap {
       display: flex;
       align-items: center;
@@ -287,7 +289,6 @@
     .checkbox-wrap input { margin: 0; width: auto; cursor: pointer; }
     .checkbox-wrap span { font-size: 13px; color: var(--text-main); user-select: none; }
 
-    /* Month Selection - NEW */
     .month-selector {
       background: #fafafa;
       border: 1px solid #000;
@@ -351,7 +352,6 @@
       gap: 8px;
       flex: 1 1 260px;
       flex-wrap: wrap;
-      min-width: 220px;
     }
 
     .month-range-field {
@@ -401,10 +401,8 @@
       }
     }
 
-/* Status & Footer */
     .status { margin-top: 12px; font-size: 12px; line-height: 1.5; }
 
-    /* Keyword Input Modal */
     .kw-modal-overlay {
       display: none;
       position: fixed;
@@ -500,7 +498,6 @@
     .app-footer a { color: #000; text-decoration: none; font-weight: 500; }
     .app-footer a:hover { text-decoration: underline; }
 
-    /* Progress Bars */
     .progress-container {
       margin-top: 12px; background: #e0e0e0; border-radius: 0;
       height: 6px; overflow: hidden; display: none;
@@ -512,7 +509,6 @@
     }
     @keyframes indeterminate { 0% { left: -40%; } 50% { left: 30%; } 100% { left: 100%; } }
   
-    /* Collapsible details/summary */
     details.collapsible summary {
       cursor: pointer;
       font-weight: 500;
@@ -572,20 +568,122 @@
     <input type="hidden" id="siteValue" />
   </div>
 
-  <div class="mode-switch">
-    <input type="radio" id="tab1" name="gscMode" value="kw" checked>
-    <label for="tab1">KW Tracker</label>
-    
-    <input type="radio" id="tab2" name="gscMode" value="url">
-    <label for="tab2">URL Tracker</label>
-    
-    <input type="radio" id="tab3" name="gscMode" value="fetch">
-    <label for="tab3">Fetch Data</label>
+  <div class="tab-nav-wrapper">
+    <button class="tab-arrow" id="tabArrowLeft" onclick="scrollTabs(-1)" title="Scroll left">&#8249;</button>
+    <div class="mode-switch" id="tabStrip">
+      <input type="radio" id="tab0" name="gscMode" value="overview" checked>
+      <label for="tab0">Overview</label>
+      
+      <input type="radio" id="tab1" name="gscMode" value="kw">
+      <label for="tab1">KW Tracker</label>
+      
+      <input type="radio" id="tab2" name="gscMode" value="url">
+      <label for="tab2">URL Tracker</label>
+      
+      <input type="radio" id="tab3" name="gscMode" value="fetch">
+      <label for="tab3">Fetch Data</label>
+
+      <input type="radio" id="tab4" name="gscMode" value="index">
+      <label for="tab4">Instant Index</label>
+    </div>
+    <button class="tab-arrow" id="tabArrowRight" onclick="scrollTabs(1)" title="Scroll right">&#8250;</button>
   </div>
 
-  <div id="kwSection" class="section">
+  <!-- OVERVIEW MODULE -->
+  <div id="overviewSection" class="section">
+    <div class="month-selector">
+      <div class="month-selector-header">
+        <label>Date Range</label>
+      </div>
+      <select id="overviewDateRangeMode">
+        <option value="last_7">Last 7 days</option>
+        <option value="last_28">Last 28 days</option>
+        <option value="last_30">Last 30 days</option>
+        <option value="last_90">Last 90 days</option>
+        <option value="last_6m">Last 6 months</option>
+        <option value="last_12m" selected>Last 12 months</option>
+        <option value="all_time">All time (GSC ~16 months)</option>
+        <option value="custom_date">Custom Date</option>
+        <option value="custom_month">Custom Month</option>
+      </select>
+      <div id="overviewCustomDateFields" style="display:none; margin-top:10px;">
+        <div style="margin-bottom:10px;">
+          <span class="month-range-label">Start Date</span>
+          <input type="date" id="overviewStartDate" />
+        </div>
+        <div>
+          <span class="month-range-label">End Date</span>
+          <input type="date" id="overviewEndDate" />
+        </div>
+      </div>
+      <div id="overviewCustomMonthFields" style="display:none; margin-top:10px;">
+        <div style="margin-bottom:10px;">
+          <span class="month-range-label">Start Month</span>
+          <input type="month" id="overviewStartMonth" />
+        </div>
+        <div>
+          <span class="month-range-label">End Month</span>
+          <input type="month" id="overviewEndMonth" />
+        </div>
+      </div>
+      <div style="margin-top:8px; font-size:11px; color:var(--text-sub);" id="overviewMonthPreview"></div>
+    </div>
 
-    <!-- DATE RANGE -->
+    <label>Search Type</label>
+    <select id="overviewSearchType">
+      <option value="web" selected>Web</option>
+      <option value="image">Image</option>
+      <option value="video">Video</option>
+      <option value="news">News</option>
+      <option value="googleNews">Google News</option>
+      <option value="discover">Discover</option>
+    </select>
+
+    <label>Target Country</label>
+    <input type="text" id="overviewCountry" placeholder="e.g. usa, ind (Optional)" />
+
+    <div class="filters-header" style="margin-top:14px;">
+      <span style="font-weight:600; font-size:12px;">Filters</span>
+      <button class="btn-small" onclick="openAddFilterModal('overviewFiltersContainer')">+ Add</button>
+    </div>
+    <div style="background:#fafafa; border:1px solid #000; padding:8px; border-radius: 0; margin-bottom:8px;">
+      <div style="display:flex; gap:6px; align-items:center;">
+        <select id="overviewPresetRegex" style="margin:0; height:auto; padding:6px; font-size:12px;">
+          <option value="">Quick Presets...</option>
+          <option value="5plus">Long-tail (5+ words)</option>
+          <option value="nonenglish">Non-English chars</option>
+          <option value="howto">How-to</option>
+          <option value="questions">Questions</option>
+          <option value="commercial">Commercial/Transactional</option>
+          <option value="comparison">Comparison/Alternatives</option>
+          <option value="local">Local Intent</option>
+          <option value="freshness">Freshness/Dates</option>
+        </select>
+        <button type="button" class="btn-small" style="height:32px;" onclick="applyPresetRegex('overviewPresetRegex', 'overviewFiltersContainer')">Apply</button>
+      </div>
+    </div>
+    <div id="overviewFiltersContainer"></div>
+
+    <div class="filters-header" style="margin-top:14px; margin-bottom:12px;">
+      <span style="font-weight:600; font-size:12px;">Select Metrics</span>
+      <button class="btn-small" onclick="openOverviewMetricsModal()">+ Select</button>
+    </div>
+
+    <button class="primary-btn" id="overviewUpdateBtn" onclick="runOverviewUpdate()">Update</button>
+    <button id="overviewStopBtn" class="primary-btn btn-danger" onclick="stopAnyUpdateUI('overview')" style="display:none; margin-top:8px;">Stop Updating</button>
+
+    <div id="overviewProgressWrapper" style="display:none; margin-top:12px;">
+      <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+        <span id="overviewProgressText">Updating...</span>
+      </div>
+      <div class="progress-container" style="display:block;">
+        <div id="overviewProgressBar" class="progress-bar"></div>
+      </div>
+    </div>
+    <div id="overviewStatus" class="status"></div>
+  </div>
+
+  <div id="kwSection" class="section" style="display:none;">
     <div class="month-selector">
       <div class="month-selector-header">
         <label>Date Range</label>
@@ -661,9 +759,8 @@
     <button id="resumeBtn" class="primary-btn" onclick="resumeKwUpdate()" style="display:none; margin-top:8px; background:#1a73e8; border-color:#1a73e8;">⟳ Resume Update</button>
   </div>
 
-  <!-- URL TRACKER - UPGRADED -->
+  <!-- URL TRACKER -->
   <div id="urlSection" class="section" style="display:none;">
-    <!-- DATE RANGE -->
     <div class="month-selector">
       <div class="month-selector-header">
         <label>Date Range</label>
@@ -728,31 +825,30 @@
       <option value="discover">Discover</option>
     </select>
 
-    <div class="filters-header" style="margin-top:14px;">
+    <div class="filters-header" style="margin-top:14px; margin-bottom:12px;">
       <span style="font-weight:600; font-size:12px;">Select Metrics</span>
       <button class="btn-small" onclick="openUrlMetricsModal()">+ Select</button>
-    </div>
-    <div id="urlMetricsBadge" style="display:none; font-size:11px; color:var(--text-sub); margin-bottom:8px; align-items:center; gap:8px; flex-wrap:wrap;">
-      <span id="urlMetricsBadgeText"></span>
-      <button onclick="resetUrlMetrics()" class="btn-small" style="font-size:10px; padding:2px 8px;">✕ Reset</button>
     </div>
 
     <div style="display:flex; gap:8px; margin-top:10px;">
       <button class="primary-btn" id="urlUpdateBtn" onclick="runUrlUpdate()">Update</button>
       <button class="primary-btn" style="background:#fff; color:#000; border:1px solid #000;" onclick="resetUrlTrackerUI()">Reset</button>
     </div>
+    <button id="urlStopBtn" class="primary-btn btn-danger" onclick="stopAnyUpdateUI('url')" style="display:none; margin-top:8px;">Stop Updating</button>
+
     <div id="urlProgressWrapper" style="display:none; margin-top:12px;">
-      <div id="urlProgressText" style="font-size:11px; margin-bottom:4px; color:var(--text-sub);">Updating...</div>
+      <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+        <span id="urlProgressText">Updating...</span>
+      </div>
       <div class="progress-container" style="display:block;">
-        <div class="fetch-progress-bar"></div>
+        <div id="urlProgressBar" class="progress-bar"></div>
       </div>
     </div>
     <div id="urlStatus" class="status"></div>
   </div>
 
-  <!-- FETCH DATA - UPGRADED -->
+  <!-- FETCH DATA -->
   <div id="fetchSection" class="section" style="display:none;">
-    <!-- DATE RANGE -->
     <div class="month-selector">
       <div class="month-selector-header">
         <label>Date Range</label>
@@ -794,7 +890,7 @@
 
       <div style="margin-top:8px; font-size:11px; color:var(--text-sub);" id="fetchMonthPreview"></div>
     </div>
-<label>Search Type</label>
+    <label>Search Type</label>
     <select id="searchType">
       <option value="web">Web</option>
       <option value="image">Image</option>
@@ -832,7 +928,7 @@
 
     <div class="filters-header">
       <span style="font-weight:600; font-size:12px;">Filters</span>
-      <button type="button" class="btn-small" onclick="addFilterRow()">+ Add</button>
+      <button type="button" class="btn-small" onclick="openAddFilterModal('filtersContainer')">+ Add</button>
     </div>
 
     <div style="background:#fafafa; border:1px solid #000; padding:8px; border-radius: 0; margin-bottom:8px;">
@@ -864,11 +960,14 @@
     </div>
 
     <button id="fetchBtn" class="primary-btn" onclick="runAdvancedFetch()">Fetch Data</button>
+    <button id="fetchStopBtn" class="primary-btn btn-danger" onclick="stopAnyUpdateUI('fetch')" style="display:none; margin-top:8px;">Stop Updating</button>
 
     <div id="fetchProgressWrapper" style="display:none; margin-top:12px;">
-      <div id="fetchProgressText" style="font-size:11px; margin-bottom:4px; color:var(--text-sub);">Fetching...</div>
+      <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+        <span id="fetchProgressText">Fetching...</span>
+      </div>
       <div class="progress-container" style="display:block;">
-        <div class="fetch-progress-bar"></div>
+        <div id="fetchProgressBar" class="progress-bar"></div>
       </div>
     </div>
     <div id="fetchStatus" class="status"></div>
@@ -880,8 +979,61 @@
     Start Over / Reset Form
   </button>
 
+  <!-- INSTANT INDEX -->
+  <div id="indexSection" class="section" style="display:none;">
+    <div style="background:#fff8e1; border:1px solid #f9a825; padding:10px 12px; margin-bottom:14px; font-size:11px; color:#5d4037; line-height:1.6;">
+      <strong>⚠️ One-time setup required</strong><br>
+      1. Enable <strong>Indexing API</strong> in your GCP project.<br>
+      2. Create a <strong>Service Account</strong> in GCP → copy its email.<br>
+      3. Add that email as an <strong>Owner</strong> in GSC → Settings → Users and permissions.<br>
+      Without this, all requests will return 403.
+    </div>
+    <label>Action</label>
+    <select id="indexAction">
+      <option value="URL_UPDATED">Submit for Indexing</option>
+      <option value="URL_DELETED">Remove from Index</option>
+    </select>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <label style="margin:0; font-size:12px; font-weight:500; color:var(--text-sub);">URLs</label>
+      <button class="btn-small" onclick="openIndexModal()" style="font-size:11px; padding:4px 10px;">+ Add URLs</button>
+    </div>
+    <div id="indexCountDisplay" style="display:none; font-size:11px; color:var(--text-sub); margin-bottom:12px;">
+      <span id="indexCountText"></span>
+      <button onclick="openIndexModal()" style="background:none; border:none; color:#000; text-decoration:underline; cursor:pointer; font-size:11px; padding:0; margin-left:6px;">Edit</button>
+    </div>
+    <p style="font-size:11px; color:var(--text-sub); margin:0 0 12px 0;">⚠️ Google allows <strong>200 URL submissions per day</strong> per property.</p>
+    <button class="primary-btn" id="indexSubmitBtn" onclick="runInstantIndex()">Submit URLs</button>
+    <div id="indexProgressWrapper" style="display:none; margin-top:12px;">
+      <div id="indexProgressText" style="font-size:11px; margin-bottom:4px; color:var(--text-sub);">Submitting...</div>
+      <div class="progress-container" style="display:block;"><div class="fetch-progress-bar"></div></div>
+    </div>
+    <div id="indexStatus" class="status"></div>
+  </div>
 
   </div><!-- /mainContent -->
+
+  <!-- OVERVIEW METRICS MODAL -->
+  <div id="overviewMetricsModalOverlay" class="kw-modal-overlay" onclick="handleOverviewMetricsOverlayClick(event)">
+    <div class="kw-modal">
+      <p class="kw-modal-title">Select Metrics</p>
+      <p class="kw-modal-hint">Choose which metrics to display for each month.</p>
+      <div style="display:flex;gap:12px;margin-bottom:8px;font-size:12px;padding:0 2px;">
+        <a href="javascript:void(0)" onclick="toggleOverviewModalMetrics(true)" style="color:#000;text-decoration:underline;font-weight:500;">Select All</a>
+        <a href="javascript:void(0)" onclick="toggleOverviewModalMetrics(false)" style="color:#555;text-decoration:underline;font-weight:500;">Clear All</a>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">
+        <label class="checkbox-wrap"><input type="checkbox" name="overviewMetric" value="clicks" checked> <span>Clicks</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="overviewMetric" value="impressions" checked> <span>Impressions</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="overviewMetric" value="ctr" checked> <span>CTR</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="overviewMetric" value="position" checked> <span>Avg Position</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="overviewMetric" value="queries"> <span>Queries</span></label>
+      </div>
+      <div class="kw-modal-actions" style="margin-top:12px;">
+        <button class="btn-cancel" onclick="closeOverviewMetricsModal()">Cancel</button>
+        <button class="btn-add-kw" onclick="confirmOverviewMetrics()">Apply</button>
+      </div>
+    </div>
+  </div>
 
   <!-- KEYWORD INPUT MODAL -->
   <div id="kwModalOverlay" class="kw-modal-overlay" onclick="handleModalOverlayClick(event)">
@@ -911,12 +1063,28 @@
     </div>
   </div>
 
-  <!-- URL METRICS MODAL -->
+  <!-- INSTANT INDEX URL MODAL -->
+  <div id="indexModalOverlay" class="kw-modal-overlay" onclick="handleIndexModalOverlayClick(event)">
+    <div class="kw-modal">
+      <p class="kw-modal-title">Add URLs to Index</p>
+      <p class="kw-modal-hint">Paste URLs — one per line. Max 200/day. Duplicates removed automatically.</p>
+      <textarea id="indexModalInput" placeholder="e.g.&#10;https://example.com/page-1&#10;https://example.com/page-2" oninput="updateIndexCounter()"></textarea>
+      <p class="kw-modal-counter" id="indexModalCounter">0 URLs</p>
+      <div class="kw-modal-actions">
+        <button class="btn-cancel" onclick="closeIndexModal()">Cancel</button>
+        <button class="btn-add-kw" onclick="confirmIndexUrls()">Add URLs</button>
+      </div>
+    </div>
+  </div>
   <div id="urlMetricsModalOverlay" class="kw-modal-overlay" onclick="handleUrlMetricsOverlayClick(event)">
     <div class="kw-modal">
       <p class="kw-modal-title">Select Metrics</p>
       <p class="kw-modal-hint">Choose which metrics to pull for each URL. Defaults to Clicks, Impressions, CTR and Avg Position.</p>
-      <div>
+      <div style="display:flex;gap:12px;margin-bottom:8px;font-size:12px;padding:0 2px;">
+        <a href="javascript:void(0)" onclick="toggleUrlModalMetrics(true)" style="color:#000;text-decoration:underline;font-weight:500;">Select All</a>
+        <a href="javascript:void(0)" onclick="toggleUrlModalMetrics(false)" style="color:#555;text-decoration:underline;font-weight:500;">Clear All</a>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">
         <label class="checkbox-wrap"><input type="checkbox" name="urlMetric" value="clicks"> <span>Clicks</span></label>
         <label class="checkbox-wrap"><input type="checkbox" name="urlMetric" value="impressions"> <span>Impressions</span></label>
         <label class="checkbox-wrap"><input type="checkbox" name="urlMetric" value="ctr"> <span>CTR</span></label>
@@ -926,9 +1094,38 @@
         <label class="checkbox-wrap"><input type="checkbox" name="urlMetric" value="is_indexed"> <span>Indexed</span></label>
       </div>
       <p style="margin:4px 0 0 0; font-size:11px; color:var(--text-sub);">⚠️ Last Crawl &amp; Indexed use the URL Inspection API — one request per URL, may be slow for large lists.</p>
-      <div class="kw-modal-actions">
+      <div class="kw-modal-actions" style="margin-top:12px;">
         <button class="btn-cancel" onclick="closeUrlMetricsModal()">Cancel</button>
         <button class="btn-add-kw" onclick="confirmUrlMetrics()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD FILTER MODAL -->
+  <div id="addFilterModalOverlay" class="kw-modal-overlay" onclick="handleAddFilterModalOverlayClick(event)">
+    <div class="kw-modal">
+      <p class="kw-modal-title">Add Filter</p>
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <select id="addFilterDim" class="filter-dim" style="flex:1; margin:0; padding:6px; font-size:12px; height:30px;">
+          <option value="query">Query</option>
+          <option value="page">Page</option>
+          <option value="country">Country</option>
+          <option value="device">Device</option>
+          <option value="searchAppearance">Appearance</option>
+        </select>
+        <select id="addFilterOp" class="filter-op" style="flex:1; margin:0; padding:6px; font-size:12px; height:30px;">
+          <option value="equals">Equals</option>
+          <option value="notEquals">Not Equals</option>
+          <option value="contains" selected>Contains</option>
+          <option value="notContains">Not Contains</option>
+          <option value="includingRegex">Regex</option>
+          <option value="excludingRegex">Not Regex</option>
+        </select>
+      </div>
+      <input type="text" id="addFilterVal" class="filter-exp" style="width:100%; margin-bottom:16px; padding:6px; font-size:12px; height:30px;" placeholder="Value...">
+      <div class="kw-modal-actions">
+        <button class="btn-cancel" onclick="closeAddFilterModal()">Cancel</button>
+        <button class="btn-add-kw" onclick="confirmAddFilter()">Add</button>
       </div>
     </div>
   </div>
@@ -1002,8 +1199,40 @@ let SITES_LOADED = false;
 let SITES_LOADING = false;
 
 let urlMonths = [];
+let overviewElapsedTimer = null;
+let genericProgressTimer = null;
+let _pendingSettings = null;
 
-// Accordion Toggle
+const OVERVIEW_METRIC_DEFAULTS = ["clicks","impressions","ctr","position"];
+const OVERVIEW_METRIC_LABELS   = { clicks:"Clicks", impressions:"Impressions", ctr:"CTR", position:"Avg Position", queries:"Queries" };
+let activeOverviewMetrics = [...OVERVIEW_METRIC_DEFAULTS];
+
+let currentAddFilterContainer = 'filtersContainer';
+
+function openAddFilterModal(containerId = 'filtersContainer') {
+  currentAddFilterContainer = containerId;
+  document.getElementById('addFilterDim').value = 'query';
+  document.getElementById('addFilterOp').value = 'contains';
+  document.getElementById('addFilterVal').value = '';
+  document.getElementById('addFilterModalOverlay').classList.add('open');
+}
+
+function closeAddFilterModal() {
+  document.getElementById('addFilterModalOverlay').classList.remove('open');
+}
+
+function handleAddFilterModalOverlayClick(e) {
+  if (e.target === document.getElementById('addFilterModalOverlay')) closeAddFilterModal();
+}
+
+function confirmAddFilter() {
+  const dimVal = document.getElementById('addFilterDim').value;
+  const opVal = document.getElementById('addFilterOp').value;
+  const exprVal = document.getElementById('addFilterVal').value;
+  addFilterRow({ dimension: dimVal, operator: opVal, expression: exprVal }, currentAddFilterContainer);
+  closeAddFilterModal();
+}
+
 function toggleDimensions() {
   const content = document.getElementById('groupByContainer');
   const header = document.querySelector('.accordion-header');
@@ -1011,7 +1240,6 @@ function toggleDimensions() {
   header.classList.toggle('open');
 }
 
-// === REGEX PRESETS ===
 const PRESET_REGEX = {
   "5plus": "(\\S+\\s+){4,}\\S+",
   "nonenglish": ".*[^\\x00-\\x7F].*",
@@ -1023,11 +1251,11 @@ const PRESET_REGEX = {
   "freshness": "\\b(latest|new|202[0-9]|update|updated)\\b"
 };
 
-function applyPresetRegex() {
-  const key = document.getElementById('presetRegex').value;
+function applyPresetRegex(selectId = 'presetRegex', containerId = 'filtersContainer') {
+  const key = document.getElementById(selectId).value;
   if (!key) return; 
   const rx = PRESET_REGEX[key];
-  addFilterRow({ dimension: "query", operator: "includingRegex", expression: rx });
+  addFilterRow({ dimension: "query", operator: "includingRegex", expression: rx }, containerId);
 }
 
 function showClearButton() {
@@ -1038,8 +1266,6 @@ function hideClearButton() {
   const btn = document.getElementById('clearToolBtn');
   if (btn) btn.style.display = 'none';
 }
-
-
 
 function monthsBetweenInclusive_(startYm, endYm) {
   if (!startYm) return [];
@@ -1068,7 +1294,6 @@ function monthsBetweenDates_(startDate, endDate) {
   if (!(startDate instanceof Date) || isNaN(startDate)) return [];
   if (!(endDate instanceof Date) || isNaN(endDate)) endDate = new Date(startDate);
 
-  // Ensure order
   let s = startDate, e = endDate;
   if (s.getTime() > e.getTime()) { [s, e] = [e, s]; }
 
@@ -1077,7 +1302,6 @@ function monthsBetweenDates_(startDate, endDate) {
   return monthsBetweenInclusive_(startYm, endYm);
 }
 
-// Generic date-mode builder — prefix = 'url' | 'fetch' | 'kw'
 function buildMonthsFromDateMode_(prefix) {
   const modeEl = document.getElementById(prefix + 'DateRangeMode');
   const mode = modeEl ? modeEl.value : 'last_7';
@@ -1108,7 +1332,19 @@ function buildMonthsFromDateMode_(prefix) {
   return [{ type: 'exact', startDate: fmt(start), endDate: fmt(end) }];
 }
 
-// Generic preview setter
+function buildOverviewMonthsFromDateMode_() {
+  const mode = document.getElementById('overviewDateRangeMode')?.value || 'last_12m';
+  
+  if (mode === 'custom_month') {
+    const startM = (document.getElementById('overviewStartMonth')?.value || '').trim();
+    const endM   = (document.getElementById('overviewEndMonth')?.value   || '').trim();
+    if (!startM) return [];
+    return monthsBetweenInclusive_(startM, endM || startM);
+  }
+  
+  return buildMonthsFromDateMode_('overview');
+}
+
 function setDatePreview_(elId, months) {
   const el = document.getElementById(elId);
   if (!el) return;
@@ -1123,7 +1359,6 @@ function setDatePreview_(elId, months) {
     : `Will fetch ${months.length} months: ${first} → ${last}`;
 }
 
-// Thin wrappers kept so call-sites in runXxx() functions are unchanged
 function buildUrlMonthsFromDateMode_()   { return buildMonthsFromDateMode_('url'); }
 function buildFetchMonthsFromDateMode_() { return buildMonthsFromDateMode_('fetch'); }
 
@@ -1152,32 +1387,62 @@ function handleFetchDateModeChange_() {
   setDatePreview_('fetchMonthPreview', buildFetchMonthsFromDateMode_());
 }
 
+function handleOverviewDateModeChange_() {
+  const mode = document.getElementById('overviewDateRangeMode')?.value || 'last_12m';
+  const df = document.getElementById('overviewCustomDateFields');
+  const mf = document.getElementById('overviewCustomMonthFields');
+  if (df) df.style.display = (mode === 'custom_date')  ? '' : 'none';
+  if (mf) mf.style.display = (mode === 'custom_month') ? '' : 'none';
+  setDatePreview_('overviewMonthPreview', buildOverviewMonthsFromDateMode_());
+}
 
+function buildKwMonthsFromDateMode_() { return buildMonthsFromDateMode_('kw'); }
 
+function handleKwDateModeChange_() {
+  const mode = document.getElementById('kwDateRangeMode')?.value || 'last_7';
+  const df = document.getElementById('kwCustomDateFields');
+  const mf = document.getElementById('kwCustomMonthFields');
+  if (df) df.style.display = (mode === 'custom_date')  ? '' : 'none';
+  if (mf) mf.style.display = (mode === 'custom_month') ? '' : 'none';
+  setDatePreview_('kwDatePreview', buildKwMonthsFromDateMode_());
+}
 
-
-// === TAB SWITCHING ===
 document.querySelectorAll('input[name="gscMode"]').forEach(radio => {
   radio.addEventListener('change', function() {
-    document.getElementById('kwSection').style.display = 'none';
-    document.getElementById('urlSection').style.display = 'none';
+    document.getElementById('overviewSection').style.display = 'none';
+    document.getElementById('kwSection').style.display    = 'none';
+    document.getElementById('urlSection').style.display   = 'none';
     document.getElementById('fetchSection').style.display = 'none';
-    
-    if (this.value === 'kw') {
-      document.getElementById('kwSection').style.display = '';
-    } else if (this.value === 'url') {
-      document.getElementById('urlSection').style.display = '';
-    } else if (this.value === 'fetch') {
-      document.getElementById('fetchSection').style.display = '';
-    }
+    document.getElementById('indexSection').style.display = 'none';
+    if      (this.value === 'overview') document.getElementById('overviewSection').style.display = '';
+    else if (this.value === 'kw')    document.getElementById('kwSection').style.display    = '';
+    else if (this.value === 'url')   document.getElementById('urlSection').style.display   = '';
+    else if (this.value === 'fetch') document.getElementById('fetchSection').style.display = '';
+    else if (this.value === 'index') document.getElementById('indexSection').style.display = '';
   });
 });
 
-// === SITE DROPDOWN ===
+function scrollTabs(dir) {
+  const strip = document.getElementById('tabStrip');
+  if (strip) {
+    const amount = dir * 100;
+    strip.scrollBy({ left: amount, behavior: 'smooth' });
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const dropdown = document.getElementById('siteDropdown');
 
-  // URL Tracker date range mode handler
+  const overviewModeEl = document.getElementById('overviewDateRangeMode');
+  if (overviewModeEl) {
+    overviewModeEl.addEventListener('change', handleOverviewDateModeChange_);
+    handleOverviewDateModeChange_();
+    ['overviewStartDate','overviewEndDate','overviewStartMonth','overviewEndMonth'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', handleOverviewDateModeChange_);
+    });
+  }
+
   const urlModeEl = document.getElementById('urlDateRangeMode');
   if (urlModeEl) {
     urlModeEl.addEventListener('change', handleUrlDateModeChange_);
@@ -1188,7 +1453,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Fetch Data date range mode handler
   const fetchModeEl = document.getElementById('fetchDateRangeMode');
   if (fetchModeEl) {
     fetchModeEl.addEventListener('change', handleFetchDateModeChange_);
@@ -1199,7 +1463,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // KW Tracker date range mode handler
   const kwModeEl = document.getElementById('kwDateRangeMode');
   if (kwModeEl) {
     kwModeEl.addEventListener('change', handleKwDateModeChange_);
@@ -1213,13 +1476,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const selected = document.getElementById('siteSelected');
   const searchInput = document.getElementById('siteSearch');
 
-  // Pre-load sites immediately on sidebar open — dropdown is instant when clicked
   SITES_LOADING = true;
   google.script.run.withSuccessHandler(sites => {
     ALL_SITES = sites;
     SITES_LOADED = true;
     SITES_LOADING = false;
     renderSiteList(sites);
+    tryRestoreSite();
   }).withFailureHandler(() => {
     SITES_LOADING = false;
   }).getGscSites();
@@ -1244,6 +1507,8 @@ document.addEventListener('DOMContentLoaded', () => {
       dropdown.classList.remove('open');
     }
   });
+
+  loadSettings();
 });
 
 function renderSiteList(sites) {
@@ -1263,13 +1528,13 @@ function renderSiteList(sites) {
       document.getElementById('siteSelectedText').textContent = url;
       document.getElementById('siteSelectedText').classList.remove('site-selected-placeholder');
       document.getElementById('siteDropdown').classList.remove('open');
+      saveSettings();
     });
   });
 }
 
-// === FILTERS ===
-function addFilterRow(preset) {
-  const container = document.getElementById('filtersContainer');
+function addFilterRow(preset, containerId = 'filtersContainer') {
+  const container = document.getElementById(containerId);
   const row = document.createElement('div');
   row.className = 'filter-row';
   
@@ -1299,8 +1564,10 @@ function addFilterRow(preset) {
   container.appendChild(row);
 }
 
-function collectFilters() {
-  const rows = document.querySelectorAll('.filter-row');
+function collectFilters(containerId = 'filtersContainer') {
+  const container = document.getElementById(containerId);
+  if (!container) return [];
+  const rows = container.querySelectorAll('.filter-row');
   const arr = [];
   rows.forEach(r => {
     const v = r.querySelector('.filter-val').value.trim();
@@ -1319,8 +1586,7 @@ function formatETA(ms) {
   return (h > 0) ? `${h}h ${m}m remaining` : `${m}m ${s}s remaining`;
 }
 
-// === KEYWORD MODAL ===
-let kwModalKeywords = []; // in-memory keyword list
+let kwModalKeywords = [];
 
 function openKwModal() {
   const ta = document.getElementById('kwModalInput');
@@ -1366,8 +1632,7 @@ function confirmAddKeywords() {
   closeKwModal();
 }
 
-// === URL MODAL ===
-let urlModalUrls = []; // in-memory URL list
+let urlModalUrls = [];
 
 function openUrlModal() {
   const ta = document.getElementById('urlModalInput');
@@ -1413,19 +1678,43 @@ function confirmAddUrls() {
   closeUrlModal();
 }
 
-
-function buildKwMonthsFromDateMode_() { return buildMonthsFromDateMode_('kw'); }
-
-function handleKwDateModeChange_() {
-  const mode = document.getElementById('kwDateRangeMode')?.value || 'last_7';
-  const df = document.getElementById('kwCustomDateFields');
-  const mf = document.getElementById('kwCustomMonthFields');
-  if (df) df.style.display = (mode === 'custom_date')  ? '' : 'none';
-  if (mf) mf.style.display = (mode === 'custom_month') ? '' : 'none';
-  setDatePreview_('kwDatePreview', buildKwMonthsFromDateMode_());
+function openOverviewMetricsModal() {
+  document.querySelectorAll('input[name="overviewMetric"]').forEach(cb => {
+    cb.checked = activeOverviewMetrics.includes(cb.value);
+  });
+  document.getElementById('overviewMetricsModalOverlay').classList.add('open');
+}
+function closeOverviewMetricsModal() {
+  document.getElementById('overviewMetricsModalOverlay').classList.remove('open');
+}
+function handleOverviewMetricsOverlayClick(e) {
+  if (e.target === document.getElementById('overviewMetricsModalOverlay')) closeOverviewMetricsModal();
+}
+function confirmOverviewMetrics() {
+  const checked = Array.from(document.querySelectorAll('input[name="overviewMetric"]:checked')).map(x => x.value);
+  activeOverviewMetrics = checked.length ? checked : [...OVERVIEW_METRIC_DEFAULTS];
+  updateOverviewMetricsBadge_();
+  closeOverviewMetricsModal();
+  saveSettings();
+}
+function resetOverviewMetrics() {
+  activeOverviewMetrics = [...OVERVIEW_METRIC_DEFAULTS];
+  document.querySelectorAll('input[name="overviewMetric"]').forEach(cb => {
+    cb.checked = OVERVIEW_METRIC_DEFAULTS.includes(cb.value);
+  });
+  updateOverviewMetricsBadge_();
+  saveSettings();
+}
+function toggleOverviewModalMetrics(check) {
+  document.querySelectorAll('input[name="overviewMetric"]').forEach(cb => cb.checked = check);
+}
+function updateOverviewMetricsBadge_() {
+  // No-op — removed per user request
+}
+function getOverviewSelectedMetrics() {
+  return activeOverviewMetrics.length ? activeOverviewMetrics : [...OVERVIEW_METRIC_DEFAULTS];
 }
 
-// === REFRESH SITES ===
 function refreshSitesList() {
   const btn = document.getElementById('refreshSitesBtn');
   btn.textContent = '↻ ...';
@@ -1440,6 +1729,7 @@ function refreshSitesList() {
       SITES_LOADED = true;
       SITES_LOADING = false;
       renderSiteList(sites);
+      tryRestoreSite();
       btn.textContent = '↻ Refresh';
       btn.disabled = false;
     })
@@ -1451,8 +1741,7 @@ function refreshSitesList() {
     .clearGscSitesCache();
 }
 
-// --- Run Functions ---
-let _lastKwParams = null; // stored so Resume can reuse them
+let _lastKwParams = null;
 
 function runKwUpdate() {
   hideClearButton();
@@ -1598,7 +1887,6 @@ function stopKwUpdateUI() {
     }).stopKwUpdate();
 }
 
-// === ELAPSED TIMER (URL Tracker + Fetch Data) ===
 let urlElapsedTimer = null;
 let fetchElapsedTimer = null;
 
@@ -1619,14 +1907,50 @@ function stopElapsedTimer(timer) {
   return null;
 }
 
+function startGenericProgress(module) {
+  if (genericProgressTimer) clearInterval(genericProgressTimer);
+  genericProgressTimer = setInterval(function() {
+    google.script.run.withSuccessHandler(function(p) {
+      updateGenericProgressUI(module, p);
+    }).getProgress();
+  }, 2000);
+}
 
-// === URL METRICS MODAL ===
+function updateGenericProgressUI(module, p) {
+  if (!p) return;
+  const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+  const bar = document.getElementById(module + 'ProgressBar');
+  const txt = document.getElementById(module + 'ProgressText');
+  if (bar) bar.style.width = pct + '%';
+  if (txt) {
+    if (p.status === 'running') {
+      txt.textContent = (p.label || 'Processing') + '... ' + p.done + ' / ' + p.total + ' (' + pct + '%)';
+    } else if (p.status === 'stopped') {
+      txt.textContent = 'Stopped.';
+    } else if (p.status === 'done') {
+      txt.textContent = 'Complete.';
+    }
+  }
+}
+
+function stopGenericProgress() {
+  if (genericProgressTimer) { clearInterval(genericProgressTimer); genericProgressTimer = null; }
+}
+
+function stopAnyUpdateUI(module) {
+  const btn = document.getElementById(module + 'StopBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Stopping...'; }
+  google.script.run.withSuccessHandler(function() {
+    stopGenericProgress();
+    if (btn) { btn.style.display = 'none'; btn.disabled = false; btn.textContent = 'Stop Updating'; }
+  }).stopAnyUpdate();
+}
+
 const URL_METRIC_DEFAULTS = ["clicks","impressions","ctr","position"];
 const URL_METRIC_LABELS   = { clicks:"Clicks", impressions:"Impressions", ctr:"CTR", position:"Avg Position", queries:"Queries", last_crawl:"Last Crawl", is_indexed:"Indexed" };
 let activeUrlMetrics = [...URL_METRIC_DEFAULTS];
 
 function openUrlMetricsModal() {
-  // Sync checkboxes to current active state
   document.querySelectorAll('input[name="urlMetric"]').forEach(cb => {
     cb.checked = activeUrlMetrics.includes(cb.value);
   });
@@ -1646,6 +1970,7 @@ function confirmUrlMetrics() {
   activeUrlMetrics = checked.length ? checked : [...URL_METRIC_DEFAULTS];
   updateUrlMetricsBadge_();
   closeUrlMetricsModal();
+  saveSettings();
 }
 
 function resetUrlMetrics() {
@@ -1654,19 +1979,14 @@ function resetUrlMetrics() {
     cb.checked = URL_METRIC_DEFAULTS.includes(cb.value);
   });
   updateUrlMetricsBadge_();
+  saveSettings();
 }
 
+function toggleUrlModalMetrics(check) {
+  document.querySelectorAll('input[name="urlMetric"]').forEach(cb => cb.checked = check);
+}
 function updateUrlMetricsBadge_() {
-  const badge = document.getElementById('urlMetricsBadge');
-  const txt   = document.getElementById('urlMetricsBadgeText');
-  const isDefault = activeUrlMetrics.length === URL_METRIC_DEFAULTS.length &&
-    URL_METRIC_DEFAULTS.every(m => activeUrlMetrics.includes(m));
-  if (isDefault) {
-    badge.style.display = 'none';
-  } else {
-    txt.textContent = activeUrlMetrics.map(m => URL_METRIC_LABELS[m] || m).join(' · ');
-    badge.style.display = 'flex';
-  }
+  // No-op — removed per user request
 }
 
 function getUrlSelectedMetrics() {
@@ -1677,7 +1997,6 @@ function runUrlUpdate() {
   const siteUrl = document.getElementById('siteValue').value;
   if (!siteUrl) return alert("Please select a GSC property first.");
 
-  // If no URLs were added via modal, warn user
   if (urlModalUrls.length === 0) {
     const proceed = confirm(
       "No URLs were added via the modal.\n\n" +
@@ -1687,7 +2006,6 @@ function runUrlUpdate() {
     if (!proceed) return;
   }
 
-  // Build months from date range selection
   urlMonths = buildUrlMonthsFromDateMode_();
 
   if (urlMonths.length === 0) {
@@ -1704,25 +2022,33 @@ function runUrlUpdate() {
 
   const progWrap = document.getElementById('urlProgressWrapper');
   const btn = document.getElementById('urlUpdateBtn');
+  const stopBtn = document.getElementById('urlStopBtn');
   document.getElementById('urlStatus').innerHTML = '';
   progWrap.style.display = 'block';
   if (btn) btn.disabled = true;
+  if (stopBtn) stopBtn.style.display = 'block';
   urlElapsedTimer = startElapsedTimer('urlProgressText', urlElapsedTimer, 'Updating');
+  startGenericProgress('url');
 
   google.script.run
     .withSuccessHandler(msg => {
       urlElapsedTimer = stopElapsedTimer(urlElapsedTimer);
+      stopGenericProgress();
       progWrap.style.display = 'none';
       if (btn) btn.disabled = false;
+      if (stopBtn) stopBtn.style.display = 'none';
       let htmlMsg = msg.replace(/\n/g, '<br>');
       document.getElementById('urlStatus').innerHTML =
         `<p style="color:green; line-height: 1.6; margin: 0;">${htmlMsg}</p>`;
       showClearButton();
+      saveSettings();
     })
     .withFailureHandler(err => {
       urlElapsedTimer = stopElapsedTimer(urlElapsedTimer);
+      stopGenericProgress();
       progWrap.style.display = 'none';
       if (btn) btn.disabled = false;
+      if (stopBtn) stopBtn.style.display = 'none';
       document.getElementById('urlStatus').innerHTML =
         '<p style="color:red;">' + (err.message || err) + '</p>';
       showClearButton();
@@ -1732,7 +2058,6 @@ function runUrlUpdate() {
 
 function resetUrlTrackerUI() {
   urlMonths = [];
-  // Reset date range selector + fields
   const modeEl = document.getElementById('urlDateRangeMode');
   if (modeEl) modeEl.value = 'last_7';
 
@@ -1743,10 +2068,13 @@ function resetUrlTrackerUI() {
 
   handleUrlDateModeChange_();
   urlElapsedTimer = stopElapsedTimer(urlElapsedTimer);
+  stopGenericProgress();
   const urlProg = document.getElementById('urlProgressWrapper');
   if (urlProg) urlProg.style.display = 'none';
   const urlBtn = document.getElementById('urlUpdateBtn');
   if (urlBtn) urlBtn.disabled = false;
+  const urlStop = document.getElementById('urlStopBtn');
+  if (urlStop) urlStop.style.display = 'none';
   urlModalUrls = [];
   document.getElementById('urlCountDisplay').style.display = 'none';
   document.getElementById('urlModalInput').value = '';
@@ -1756,14 +2084,84 @@ function resetUrlTrackerUI() {
   document.getElementById('urlStatus').innerHTML = '';
 }
 
+function runOverviewUpdate() {
+  hideClearButton();
+  const siteUrl = document.getElementById('siteValue').value;
+  if (!siteUrl) return alert("Please select a GSC property.");
 
-// === ROW FILTER MODAL ===
-let activeRowFilters = {}; // { clicks: {op, val}, impressions: {op, val}, position: {op, val} }
+  const months = buildOverviewMonthsFromDateMode_();
+  if (!months || months.length === 0) {
+    const mode = document.getElementById('overviewDateRangeMode')?.value || 'last_12m';
+    if (mode === 'custom_month') return alert("Select Start Month (and optionally End Month).");
+    if (mode === 'custom_date') return alert("Select Start Date (and optionally an End Date).");
+    return alert("Unable to determine date range. Please try again.");
+  }
 
+  const searchType = document.getElementById('overviewSearchType').value;
+  const country = (document.getElementById('overviewCountry').value || "").trim();
+  const filters = collectFilters('overviewFiltersContainer');
+
+  const progWrap = document.getElementById('overviewProgressWrapper');
+  const btn = document.getElementById('overviewUpdateBtn');
+  const stopBtn = document.getElementById('overviewStopBtn');
+  document.getElementById('overviewStatus').innerHTML = '';
+  progWrap.style.display = 'block';
+  if (btn) btn.disabled = true;
+  if (stopBtn) stopBtn.style.display = 'block';
+  overviewElapsedTimer = startElapsedTimer('overviewProgressText', overviewElapsedTimer, 'Updating');
+  startGenericProgress('overview');
+
+  google.script.run
+    .withSuccessHandler(msg => {
+      overviewElapsedTimer = stopElapsedTimer(overviewElapsedTimer);
+      stopGenericProgress();
+      progWrap.style.display = 'none';
+      if (btn) btn.disabled = false;
+      if (stopBtn) stopBtn.style.display = 'none';
+      let htmlMsg = msg.replace(/\n/g, '<br>');
+      document.getElementById('overviewStatus').innerHTML =
+        `<p style="color:green; line-height: 1.6; margin: 0;">${htmlMsg}</p>`;
+      showClearButton();
+      saveSettings();
+    })
+    .withFailureHandler(err => {
+      overviewElapsedTimer = stopElapsedTimer(overviewElapsedTimer);
+      stopGenericProgress();
+      progWrap.style.display = 'none';
+      if (btn) btn.disabled = false;
+      if (stopBtn) stopBtn.style.display = 'none';
+      document.getElementById('overviewStatus').innerHTML =
+        '<p style="color:red;">' + (err.message || err) + '</p>';
+      showClearButton();
+    })
+    .fetchGscOverviewFromUI({ siteUrl, months, searchType, country, filters, metrics: getOverviewSelectedMetrics() });
+}
+
+function resetOverviewUI() {
+  const modeEl = document.getElementById('overviewDateRangeMode');
+  if (modeEl) modeEl.value = 'last_12m';
+  ['overviewStartDate','overviewEndDate','overviewStartMonth','overviewEndMonth'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  handleOverviewDateModeChange_();
+  overviewElapsedTimer = stopElapsedTimer(overviewElapsedTimer);
+  stopGenericProgress();
+  const prog = document.getElementById('overviewProgressWrapper');
+  if (prog) prog.style.display = 'none';
+  const btn = document.getElementById('overviewUpdateBtn');
+  if (btn) btn.disabled = false;
+  const stopBtn = document.getElementById('overviewStopBtn');
+  if (stopBtn) stopBtn.style.display = 'none';
+  document.getElementById('overviewCountry').value = '';
+  document.getElementById('overviewSearchType').value = 'web';
+  resetOverviewMetrics();
+  document.getElementById('overviewStatus').innerHTML = '';
+}
+
+let activeRowFilters = {};
 const RF_OP_LABELS = { eq: '=', neq: '≠', gt: '>', gte: '≥', lt: '<', lte: '≤' };
 
 function openRowFilterModal() {
-  // Populate selects/inputs from activeRowFilters
   ['clicks','impressions','position'].forEach(metric => {
     const f = activeRowFilters[metric];
     document.getElementById('rf' + metric.charAt(0).toUpperCase() + metric.slice(1) + 'Op').value  = f ? f.op  : '';
@@ -1790,6 +2188,7 @@ function confirmRowFilters() {
   });
   updateRfBadge_();
   closeRowFilterModal();
+  saveSettings();
 }
 
 function clearRowFilters() {
@@ -1801,6 +2200,7 @@ function clearRowFilters() {
     if (valEl) valEl.value = '';
   });
   updateRfBadge_();
+  saveSettings();
 }
 
 function updateRfBadge_() {
@@ -1818,7 +2218,6 @@ function updateRfBadge_() {
   }
 }
 
-// --- FETCH DATA (NEW) ---
 function runAdvancedFetch() {
   hideClearButton();
   const siteUrl = document.getElementById('siteValue').value;
@@ -1828,7 +2227,7 @@ function runAdvancedFetch() {
   if (!months || months.length === 0) {
     const mode = document.getElementById('fetchDateRangeMode')?.value || 'last_7';
     if (mode === 'custom_month') return alert("Select Start Month (and optionally End Month).");
-    if (mode === 'custom_date') return alert("Select Start Date (and optionally End Date).");
+    if (mode === 'custom_date') return alert("Select Start Date (and optionally an End Date).");
     return alert("Unable to determine date range. Please try again.");
   }
 
@@ -1841,24 +2240,32 @@ function runAdvancedFetch() {
   const statusEl = document.getElementById('fetchStatus');
   const progWrap = document.getElementById('fetchProgressWrapper');
   const btn = document.getElementById('fetchBtn');
+  const stopBtn = document.getElementById('fetchStopBtn');
 
   statusEl.innerHTML = '';
   progWrap.style.display = 'block';
   if (btn) btn.disabled = true;
+  if (stopBtn) stopBtn.style.display = 'block';
   fetchElapsedTimer = startElapsedTimer('fetchProgressText', fetchElapsedTimer, 'Fetching');
+  startGenericProgress('fetch');
 
   requestAnimationFrame(() => {
     setTimeout(() => {
       google.script.run
         .withSuccessHandler(msg => {
           fetchElapsedTimer = stopElapsedTimer(fetchElapsedTimer);
+          stopGenericProgress();
           progWrap.style.display = 'none'; if (btn) btn.disabled = false;
+          if (stopBtn) stopBtn.style.display = 'none';
           statusEl.innerHTML = '<p style="color:green;">' + msg + '</p>';
           showClearButton();
+          saveSettings();
         })
         .withFailureHandler(err => {
           fetchElapsedTimer = stopElapsedTimer(fetchElapsedTimer);
+          stopGenericProgress();
           progWrap.style.display = 'none'; if (btn) btn.disabled = false;
+          if (stopBtn) stopBtn.style.display = 'none';
           statusEl.innerHTML = '<p style="color:red;">' + (err.message || err) + '</p>';
           showClearButton();
         })
@@ -1872,10 +2279,13 @@ function resetToolUI() {
   const siteText = document.getElementById('siteSelectedText');
   siteText.textContent = 'Choose GSC Property...';
   siteText.classList.add('site-selected-placeholder');
-  document.getElementById('tab1').checked = true;
-  document.getElementById('kwSection').style.display = '';
+  document.getElementById('tab0').checked = true;
+  document.getElementById('overviewSection').style.display = '';
+  document.getElementById('kwSection').style.display = 'none';
   document.getElementById('urlSection').style.display = 'none';
   document.getElementById('fetchSection').style.display = 'none';
+  document.getElementById('indexSection').style.display = 'none';
+  resetOverviewUI();
   document.getElementById('kwCountry').value = '';
   const kwModeReset = document.getElementById('kwDateRangeMode');
   if (kwModeReset) kwModeReset.value = 'last_7';
@@ -1910,6 +2320,136 @@ function resetToolUI() {
   urlElapsedTimer = stopElapsedTimer(urlElapsedTimer);
   fetchElapsedTimer = stopElapsedTimer(fetchElapsedTimer);
   hideClearButton();
+}
+
+let indexModalUrls = [];
+
+function openIndexModal() {
+  const ta = document.getElementById('indexModalInput');
+  ta.value = indexModalUrls.join('\n');
+  updateIndexCounter();
+  document.getElementById('indexModalOverlay').classList.add('open');
+  setTimeout(() => ta.focus(), 50);
+}
+
+function closeIndexModal() {
+  document.getElementById('indexModalOverlay').classList.remove('open');
+}
+
+function handleIndexModalOverlayClick(e) {
+  if (e.target === document.getElementById('indexModalOverlay')) closeIndexModal();
+}
+
+function updateIndexCounter() {
+  const lines = document.getElementById('indexModalInput').value
+    .split('\n').map(l => l.trim()).filter(Boolean);
+  const unique = [...new Set(lines.map(l => l.toLowerCase()))].length;
+  document.getElementById('indexModalCounter').textContent = unique + ' URL' + (unique !== 1 ? 's' : '');
+}
+
+function confirmIndexUrls() {
+  const lines = document.getElementById('indexModalInput').value
+    .split('\n').map(l => l.trim()).filter(Boolean);
+  const seen = new Set();
+  indexModalUrls = lines.filter(l => {
+    const key = l.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const display = document.getElementById('indexCountDisplay');
+  const countText = document.getElementById('indexCountText');
+  if (indexModalUrls.length > 0) {
+    countText.textContent = indexModalUrls.length + ' URL' + (indexModalUrls.length !== 1 ? 's' : '') + ' added';
+    display.style.display = 'block';
+  } else {
+    display.style.display = 'none';
+  }
+  closeIndexModal();
+}
+
+function runInstantIndex() {
+  const siteUrl = document.getElementById('siteValue').value;
+  if (!siteUrl) return alert("Please select a GSC property.");
+  if (indexModalUrls.length === 0) return alert("Please add at least one URL.");
+
+  const action = document.getElementById('indexAction').value;
+  const progWrap = document.getElementById('indexProgressWrapper');
+  const statusEl = document.getElementById('indexStatus');
+  const btn = document.getElementById('indexSubmitBtn');
+
+  statusEl.innerHTML = '';
+  progWrap.style.display = 'block';
+  btn.disabled = true;
+
+  google.script.run
+    .withSuccessHandler(msg => {
+      progWrap.style.display = 'none';
+      btn.disabled = false;
+      statusEl.innerHTML = `<p style="color:green; white-space:pre-wrap;">${msg}</p>`;
+      saveSettings();
+    })
+    .withFailureHandler(err => {
+      progWrap.style.display = 'none';
+      btn.disabled = false;
+      statusEl.innerHTML = `<p style="color:red;">${err.message || err}</p>`;
+    })
+    .submitInstantIndex({ urls: indexModalUrls, action: action });
+}
+
+/* ─── SETTINGS SAVE / LOAD ─── */
+
+function saveSettings() {
+  const settings = {
+    siteUrl: document.getElementById('siteValue').value,
+    kwCountry: document.getElementById('kwCountry').value,
+    urlCountry: document.getElementById('urlCountry').value,
+    overviewCountry: document.getElementById('overviewCountry').value,
+    overviewSearchType: document.getElementById('overviewSearchType').value,
+    urlSearchType: document.getElementById('urlSearchType').value,
+    indexAction: document.getElementById('indexAction').value,
+    overviewMetrics: activeOverviewMetrics,
+    urlMetrics: activeUrlMetrics
+  };
+  google.script.run.saveUserSetting('uiSettings', settings);
+}
+
+function loadSettings() {
+  google.script.run.withSuccessHandler(function(settings) {
+    restoreSettings(settings);
+  }).getUserSetting('uiSettings');
+}
+
+function restoreSettings(settings) {
+  if (!settings) return;
+  _pendingSettings = settings;
+  tryRestoreSite();
+
+  if (settings.kwCountry) document.getElementById('kwCountry').value = settings.kwCountry;
+  if (settings.urlCountry) document.getElementById('urlCountry').value = settings.urlCountry;
+  if (settings.overviewCountry) document.getElementById('overviewCountry').value = settings.overviewCountry;
+  if (settings.overviewSearchType) document.getElementById('overviewSearchType').value = settings.overviewSearchType;
+  if (settings.urlSearchType) document.getElementById('urlSearchType').value = settings.urlSearchType;
+  if (settings.indexAction) document.getElementById('indexAction').value = settings.indexAction;
+  if (settings.overviewMetrics) {
+    activeOverviewMetrics = settings.overviewMetrics;
+    updateOverviewMetricsBadge_();
+  }
+  if (settings.urlMetrics) {
+    activeUrlMetrics = settings.urlMetrics;
+    updateUrlMetricsBadge_();
+  }
+}
+
+function tryRestoreSite() {
+  const settings = _pendingSettings;
+  if (!settings || !settings.siteUrl || !SITES_LOADED) return;
+  const match = ALL_SITES.find(s => s.siteUrl === settings.siteUrl);
+  if (match) {
+    document.getElementById('siteValue').value = match.siteUrl;
+    document.getElementById('siteSelectedText').textContent = match.siteUrl;
+    document.getElementById('siteSelectedText').classList.remove('site-selected-placeholder');
+  }
 }
 </script>
 </body>

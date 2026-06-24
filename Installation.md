@@ -1,5 +1,5 @@
 
-# Installation Guide - HS SEO Tools v2.0
+# Installation Guide - HS SEO Tools v3.0
 
 Complete step-by-step guide to install HS SEO Tools in your Google Sheets.
 
@@ -66,11 +66,18 @@ Before you begin, make sure you have:
 
 2. **Enable Google Search Console API**
    - Search for: `Google Search Console API`
-   - Click on it
-   - Click **"Enable"**
-   - Wait for confirmation
+   - Click on it, then click **"Enable"**
 
-3. **Configure OAuth Consent Screen & Test Users (Crucial!)**
+3. **Enable Google Analytics Data API** *(for GA4 module)*
+   - Search for: `Google Analytics Data API`
+   - Click on it, then click **"Enable"**
+
+4. **Enable Google Ads API** *(for Google Ads module)*
+   - Search for: `Google Ads API`
+   - Click on it, then click **"Enable"**
+   - Note: You will also need a **Developer Token** from your Google Ads Manager Account (MCC). Apply for it at [ads.google.com](https://ads.google.com) under Tools > API Center.
+
+5. **Configure OAuth Consent Screen & Test Users (Crucial!)**
    - Go to OAuth Consent Screen
    - In the left sidebar, click "APIs & Services" > "OAuth consent screen"
    - Select "External" (if using a standard Gmail account) and click "Create"
@@ -174,7 +181,15 @@ If you prefer to set up from scratch instead of copying the template:
 
 1. **Download the code files:**
    - Visit: https://github.com/hs-builds/hs-seo-tools
-   - Download: `code.gs`, `GSC.gs`, `UI.html`, `ComingSoon.html`, `appsscript.json`
+   - Download all files:
+     - `Code.gs` — Main entry point and menu setup
+     - `GSC.gs` — Google Search Console backend
+     - `UI.html` — GSC module UI
+     - `GA4.html` — GA4 Analytics module UI
+     - `ga4.gs` — GA4 Analytics module backend
+     - `ad.html` — Google Ads module UI
+     - `ads.gs` — Google Ads module backend
+     - `appsscript.json` — OAuth scopes manifest
 
 2. **Create a Google Sheet:**
    - Create new sheet at https://sheets.google.com
@@ -249,6 +264,64 @@ If you prefer to set up from scratch instead of copying the template:
 7. Click **"Fetch Data"**
 
 **Results appear in "GSC Data" sheet**
+
+---
+
+### GA4 Analytics Mode *(New in v3.0)*
+
+**Use for:**
+- Pulling GA4 traffic, audience, page, event, ecommerce data into Sheets
+- LLM traffic analysis (ChatGPT, Perplexity, Gemini referrals)
+- UTM campaign reporting
+
+**Run:**
+1. Click **HS SEO Tools > GA4**
+2. Select your **GA4 Property** from the dropdown
+3. Choose a **tab**: Traffic, Audience, Pages, Events, Ecommerce, LLM, UTM
+4. Set your **date range**
+5. Pick **metrics** and optional **Group By** dimensions
+6. Click **"Fetch Data"**
+
+**Results appear in a dedicated sheet tab** (e.g. `GA4 Traffic`)
+
+---
+
+### Google Ads Keyword Volume *(New in v3.0)*
+
+**Use for:**
+- Getting accurate search volume and bid data for any list of keywords
+- Competitor keyword analysis with real Google Ads data
+
+**Run:**
+1. Click **HS SEO Tools > Google Ads**
+2. Expand **⚙️ API Credentials** and enter your:
+   - **MCC Account ID** (Manager Account, numbers only)
+   - **Developer Token**
+3. Click **Load Accounts** and select a sub-account
+4. Set **Location** and **Language**
+5. Switch to **Keyword Volume** tab
+6. Paste your keywords (one per line)
+7. Choose **Historic** option (3 / 6 / 12 / 24 months or Custom)
+8. Click **"Get Volume"**
+
+**Results appear in `Keyword Volume` sheet**
+
+---
+
+### Google Ads KW Magic Tool *(New in v3.0)*
+
+**Use for:**
+- Keyword research and discovery from a seed term
+- Building keyword lists for content or PPC campaigns
+
+**Run:**
+1. Follow steps 1–4 above (credentials + account + location)
+2. Switch to **KW Magic Tool** tab
+3. Enter a **seed keyword** (e.g. `wall paint`)
+4. Choose **Historic** option
+5. Click **"Get Ideas"**
+
+**Results appear in `KW Magic Tool` sheet** with hundreds of keyword ideas
 
 ---
 

@@ -1,0 +1,1741 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #000000;
+      --bg-color: #ffffff;
+      --surface: #ffffff;
+      --text-main: #000000;
+      --text-sub: #555555;
+      --border: #000000;
+      --radius: 0px;
+    }
+    html, body { height:100%; margin:0; overflow:hidden; }
+    body {
+      font-family:'Figtree',-apple-system,BlinkMacSystemFont,sans-serif;
+      font-size:13px; color:var(--text-main);
+      background:var(--bg-color); box-sizing:border-box;
+      overflow:hidden; position:relative;
+    }
+    #mainContent {
+      position:absolute; top:0; left:0; right:0; bottom:33px;
+      padding:16px; padding-bottom:12px;
+      overflow-y:auto; box-sizing:border-box;
+    }
+    label { display:block; font-weight:500; color:var(--text-sub); margin-bottom:6px; font-size:12px; }
+    select, input[type="text"], input[type="date"], input[type="month"] {
+      width:100%; box-sizing:border-box; padding:10px 12px; margin-bottom:12px;
+      border:1px solid var(--border); border-radius:var(--radius);
+      font-size:13px; font-family:inherit; background:var(--surface);
+      transition:all 0.2s ease; outline:none; appearance:auto;
+    }
+    select:focus, input:focus { box-shadow:0 0 0 2px rgba(0,0,0,0.08); }
+
+    button.primary-btn {
+      width:100%; background:#000; color:#fff; border:1px solid #000;
+      padding:12px; border-radius:var(--radius); cursor:pointer;
+      font-size:13px; font-weight:600; margin-top:8px; transition:background 0.2s;
+    }
+    button.primary-btn:hover { background:#333; }
+    button.primary-btn:disabled { opacity:0.4; cursor:not-allowed; }
+    .btn-small {
+      padding:6px 10px; font-size:11px; font-weight:500;
+      background:#fff; color:#000; border:1px solid #000; border-radius:0; cursor:pointer;
+    }
+    .btn-small:hover { background:#f1f3f4; }
+
+    /* TABS */
+    .tab-nav-wrapper {
+      position:relative; display:flex; align-items:stretch;
+      border-bottom:1px solid #000; margin:0; background:#fff;
+    }
+    .tab-arrow {
+      flex:0 0 22px; width:22px; background:#fff; border:none;
+      border-right:1px solid #e0e0e0; cursor:pointer;
+      color:#555; font-size:13px; display:flex; align-items:center;
+      justify-content:center; padding:0; transition:background 0.15s;
+      z-index:2; user-select:none;
+    }
+    .tab-arrow:last-child { border-right:none; border-left:1px solid #e0e0e0; }
+    .tab-arrow:hover { background:#f0f0f0; color:#000; }
+    .tab-arrow:disabled { opacity:0.25; cursor:default; }
+    .mode-switch {
+      display:flex; flex:1; overflow-x:hidden; /* hidden — arrows do the scrolling */
+      scrollbar-width:none; gap:0; scroll-behavior:smooth;
+    }
+    .mode-switch::-webkit-scrollbar { display:none; }
+    .mode-switch input[type="radio"] { display:none; }
+    .mode-switch label {
+      flex:0 0 auto; text-align:center; padding:8px 11px; margin:0;
+      cursor:pointer; font-size:11px; font-weight:500; color:var(--text-sub);
+      white-space:nowrap; border:none; background:transparent;
+      border-bottom:2px solid transparent;
+      transition:color 0.15s, border-color 0.15s;
+    }
+    .mode-switch label:hover { color:#000; }
+    .mode-switch input:checked + label { color:#000; font-weight:600; border-bottom:2px solid #000; }
+    /* greyed-out metric */
+    .metric-disabled { opacity:0.35; pointer-events:none; cursor:not-allowed; }
+
+    /* PROPERTY DROPDOWN */
+    .site-wrapper { margin-bottom:12px; }
+    .site-dropdown { position:relative; border:1px solid var(--border); background:var(--surface); cursor:pointer; }
+    .site-dropdown.open { box-shadow:0 0 0 2px rgba(0,0,0,0.08); }
+    .site-selected { padding:10px 12px; display:flex; justify-content:space-between; align-items:center; font-size:13px; }
+    .site-selected-placeholder { color:var(--text-sub); }
+    .site-arrow { width:0; height:0; flex-shrink:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:5px solid var(--text-sub); opacity:0.7; }
+    .site-panel {
+      position:absolute; left:0; right:0; top:100%; z-index:999;
+      background:#fff; border:1px solid var(--border);
+      box-shadow:0 4px 12px rgba(0,0,0,0.1); margin-top:2px;
+      opacity:0; transform:translateY(-6px); pointer-events:none;
+      transition:opacity 0.15s ease, transform 0.15s ease;
+    }
+    .site-dropdown.open .site-panel { opacity:1; transform:translateY(0); pointer-events:auto; }
+    .site-search-bar input { border:none; border-bottom:1px solid var(--border); border-radius:0; margin:0; padding:10px 12px; }
+    .site-list { max-height:200px; overflow-y:auto; }
+    .site-item { padding:10px 12px; font-size:13px; cursor:pointer; }
+    .site-item:hover { background:#f0f0f0; }
+    .site-item .site-sub { font-size:11px; color:var(--text-sub); margin-top:2px; }
+
+    /* SECTION CARD */
+    .section { background:var(--surface); border:1px solid var(--border); padding:16px; margin-top:12px; }
+
+    /* DATE RANGE */
+    .month-selector { background:#fafafa; border:1px solid #000; padding:12px; margin-bottom:12px; }
+    .month-selector-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .month-selector-header label { margin:0; font-weight:600; font-size:13px; }
+    .month-range-label { font-size:11px; color:var(--text-sub); display:block; margin-bottom:4px; }
+    .date-preview { margin-top:6px; font-size:11px; color:var(--text-sub); min-height:14px; }
+
+    /* ACCORDION */
+    .accordion-header {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 12px; background:#f5f5f5; cursor:pointer;
+      font-weight:500; font-size:12px; margin-bottom:8px;
+      border:1px solid #000; user-select:none; transition:background 0.2s;
+    }
+    .accordion-header:hover { background:#e8e8e8; }
+    .accordion-arrow { font-size:10px; transition:transform 0.2s ease; }
+    .accordion-header.open .accordion-arrow { transform:rotate(180deg); }
+    .accordion-content { max-height:0; overflow:hidden; opacity:0; transition:max-height 0.25s ease,opacity 0.2s ease; }
+    .accordion-content.open { max-height:600px; opacity:1; margin-bottom:10px; }
+
+    /* CHECKBOXES */
+    .checkbox-wrap { display:flex; align-items:center; gap:10px; margin:0; padding:8px 6px; cursor:pointer; transition:background 0.15s; }
+    .checkbox-wrap:hover { background:#f5f5f5; }
+    .checkbox-wrap input[type="checkbox"] { margin:0; width:auto; cursor:pointer; accent-color:#000; }
+    .checkbox-wrap span { font-size:12px; color:var(--text-main); user-select:none; }
+    .metric-grid { display:grid; grid-template-columns:1fr 1fr; gap:2px; margin-bottom:8px; }
+
+    /* BADGE */
+    .badge-row { display:none; align-items:center; gap:8px; flex-wrap:wrap; font-size:11px; color:var(--text-sub); margin-bottom:10px; }
+    .badge-row.show { display:flex; }
+
+    /* FILTERS */
+    .filters-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .filter-row { display:flex; gap:6px; margin-bottom:8px; background:#fff; border:1px solid var(--border); padding:4px; }
+    .filter-row select, .filter-row input { border:none; margin:0; padding:6px; font-size:12px; background:transparent; height:30px; }
+    .filter-row select { width:35%; font-weight:500; }
+    .filter-row input { flex:1; }
+    .filter-remove { background:none; border:none; color:#999; font-size:18px; cursor:pointer; padding:0 6px; }
+    .filter-remove:hover { color:#c00; }
+
+    .section-label { font-size:11px; font-weight:600; color:var(--text-sub); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; margin-top:2px; }
+    .divider { border:none; border-top:1px solid #e0e0e0; margin:12px 0; }
+    .info-tag { display:inline-block; font-size:10px; font-weight:500; padding:1px 5px; border:1px solid #bbb; color:#555; margin-left:4px; }
+
+    /* MODAL */
+    .modal-overlay {
+      display:none; position:absolute; top:0; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,0.45); z-index:2000;
+      align-items:center; justify-content:center;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal-box {
+      background:#fff; border:1px solid #000;
+      width:calc(100% - 32px); max-width:340px;
+      padding:16px; box-sizing:border-box;
+      display:flex; flex-direction:column; gap:10px;
+      max-height:80vh; overflow-y:auto;
+      position:relative; z-index:2001;
+    }
+    .modal-title { font-weight:600; font-size:13px; color:#000; margin:0; }
+    .modal-hint { font-size:11px; color:var(--text-sub); margin:0; }
+    .modal-textarea { width:100%; box-sizing:border-box; height:150px; border:1px solid #000; border-radius:0; padding:10px; font-size:13px; font-family:inherit; resize:vertical; outline:none; }
+    .modal-textarea:focus { box-shadow:0 0 0 2px rgba(0,0,0,0.08); }
+    .modal-counter { font-size:11px; color:var(--text-sub); text-align:right; margin:0; }
+    .modal-actions { display:flex; gap:8px; }
+    .modal-actions button { flex:1; padding:10px; font-size:13px; font-weight:600; border:1px solid #000; cursor:pointer; border-radius:0; }
+    .btn-cancel { background:#fff; color:#000; }
+    .btn-cancel:hover { background:#f5f5f5; }
+    .btn-confirm { background:#000; color:#fff; }
+    .btn-confirm:hover { background:#333; }
+    .ke-loading { font-size:12px; color:var(--text-sub); padding:8px 0; }
+
+    /* PROGRESS */
+    .progress-container { margin-top:8px; background:#e0e0e0; height:6px; overflow:hidden; display:block; }
+    .fetch-progress-bar { height:100%; width:40%; background:#000; position:relative; animation:indeterminate 1.5s infinite ease-in-out; }
+    @keyframes indeterminate { 0%{left:-40%} 50%{left:30%} 100%{left:100%} }
+    .status { margin-top:12px; font-size:12px; line-height:1.5; }
+
+    .app-footer {
+      position:absolute; bottom:0; left:0; right:0; height:33px;
+      background:#fff; border-top:1px solid #000;
+      display:flex; align-items:center; justify-content:center;
+      font-size:11px; color:var(--text-sub); z-index:999;
+    }
+    .app-footer a { color:#000; text-decoration:none; font-weight:500; }
+    .app-footer a:hover { text-decoration:underline; }
+  </style>
+</head>
+<body>
+<div id="mainContent">
+
+  <!-- ============ PROPERTY SELECTOR ============ -->
+  <div class="site-wrapper">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <label style="margin:0;">GA4 Property</label>
+      <button class="btn-small" id="refreshPropsBtn" onclick="refreshProps()" style="padding:4px 8px;">↻ Refresh</button>
+    </div>
+    <div id="propDropdown" class="site-dropdown">
+      <div class="site-selected" onclick="togglePropDD()">
+        <span id="propSelectedText" class="site-selected-placeholder">Choose GA4 Property...</span>
+        <span class="site-arrow"></span>
+      </div>
+      <div class="site-panel">
+        <div class="site-search-bar">
+          <input type="text" id="propSearch" placeholder="Search property..." oninput="filterProps()">
+        </div>
+        <div id="propList" class="site-list">
+          <div style="padding:10px;font-size:12px;color:#999;">Loading...</div>
+        </div>
+      </div>
+    </div>
+    <input type="hidden" id="propValue">
+  </div>
+
+  <!-- ============ TABS ============ -->
+  <div class="tab-nav-wrapper">
+    <button class="tab-arrow" id="tabArrowLeft" onclick="scrollTabs(-1)" title="Scroll left">&#8249;</button>
+    <div class="mode-switch" id="tabStrip">
+      <input type="radio" id="tab1" name="ga4Mode" value="traffic"   checked onchange="switchTab('traffic')">
+      <label for="tab1">Traffic</label>
+      <input type="radio" id="tab2" name="ga4Mode" value="audience"  onchange="switchTab('audience')">
+      <label for="tab2">Audience</label>
+      <input type="radio" id="tab3" name="ga4Mode" value="pages"     onchange="switchTab('pages')">
+      <label for="tab3">Pages</label>
+      <input type="radio" id="tab4" name="ga4Mode" value="events"    onchange="switchTab('events')">
+      <label for="tab4">Events</label>
+      <input type="radio" id="tab5" name="ga4Mode" value="ecommerce" onchange="switchTab('ecommerce')">
+      <label for="tab5">Ecommerce</label>
+      <input type="radio" id="tab6" name="ga4Mode" value="llm"       onchange="switchTab('llm')">
+      <label for="tab6">LLM</label>
+      <input type="radio" id="tab7" name="ga4Mode" value="utm"       onchange="switchTab('utm')">
+      <label for="tab7">UTM</label>
+    </div>
+    <button class="tab-arrow" id="tabArrowRight" onclick="scrollTabs(1)" title="Scroll right">&#8250;</button>
+  </div>
+
+  <!-- ================================================ -->
+  <!-- TAB 1: TRAFFIC                                   -->
+  <!-- ================================================ -->
+  <div id="trafficSection" class="section">
+    <div class="month-selector">
+      <div class="month-selector-header"><label>Date Range</label></div>
+      <select id="tr_dateMode" onchange="handleDateMode('tr')">
+        <option value="last_7">Last 7 days</option>
+        <option value="last_28">Last 28 days</option>
+        <option value="last_30" selected>Last 30 days</option>
+        <option value="last_90">Last 90 days</option>
+        <option value="last_6m">Last 6 months</option>
+        <option value="last_12m">Last 12 months</option>
+        <option value="custom_date">Custom Date</option>
+        <option value="custom_month">Custom Month</option>
+      </select>
+      <div id="tr_customDate" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Date</span>
+        <input type="date" id="tr_startDate" style="margin-bottom:8px;" onchange="updatePreview('tr')">
+        <span class="month-range-label">End Date</span>
+        <input type="date" id="tr_endDate" style="margin:0;" onchange="updatePreview('tr')">
+      </div>
+      <div id="tr_customMonth" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Month</span>
+        <input type="month" id="tr_startMonth" style="margin-bottom:8px;" onchange="updatePreview('tr')">
+        <span class="month-range-label">End Month</span>
+        <input type="month" id="tr_endMonth" style="margin:0;" onchange="updatePreview('tr')">
+      </div>
+      <div id="tr_preview" class="date-preview"></div>
+    </div>
+
+    <!-- METRICS -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <span class="section-label" style="margin:0;">Metrics</span>
+      <button class="btn-small" onclick="openMetricsModal('traffic')" style="font-size:11px;padding:4px 8px;">+ Select</button>
+    </div>
+
+    <!-- EVENTS — button trigger -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;margin-top:10px;">
+      <span class="section-label" style="margin:0;">Events <span class="info-tag">Optional</span></span>
+      <button class="btn-small" onclick="openKeyEventsModal('traffic')" style="font-size:11px;padding:4px 8px;">+ Select</button>
+    </div>
+    <div id="tr_keBadge" style="font-size:11px;color:var(--text-sub);margin-bottom:6px;"></div>
+
+    <!-- DAILY BREAKDOWN toggle -->
+    <label class="checkbox-wrap" style="margin-bottom:10px;border:1px solid #e0e0e0;padding:10px 8px;">
+      <input type="checkbox" id="tr_daily">
+      <span style="font-size:12px;font-weight:500;">Daily Breakdown <span style="font-weight:400;color:#888;">(adds Date column)</span></span>
+    </label>
+
+    <!-- GROUP BY accordion -->
+    <div class="accordion-header" id="tr_dimHeader" onclick="toggleAccordion('tr_dim','tr_dimHeader')">
+      <span>Group By <span id="tr_dimBadge" style="font-size:10px;color:#888;font-weight:400;margin-left:4px;"></span></span>
+      <span class="accordion-arrow">▼</span>
+    </div>
+    <div class="accordion-content" id="tr_dim">
+      <div class="metric-grid">
+        <label class="checkbox-wrap"><input type="checkbox" name="tr_dim" value="sessionDefaultChannelGrouping"><span>Channel</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="tr_dim" value="sessionSource"><span>Source</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="tr_dim" value="sessionMedium"><span>Medium</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="tr_dim" value="sessionCampaignName"><span>Campaign</span></label>
+        <label class="checkbox-wrap"><input type="checkbox" name="tr_dim" value="sessionSourceMedium"><span>Source / Medium</span></label>
+      </div>
+    </div>
+
+    <!-- FILTERS accordion -->
+    <div class="accordion-header" id="tr_filterHeader" onclick="toggleAccordion('tr_filter','tr_filterHeader')">
+      <span>Filters <span class="info-tag">Optional</span></span>
+      <span class="accordion-arrow">▼</span>
+    </div>
+    <div class="accordion-content" id="tr_filter">
+      <label>Channel</label>
+      <select id="tr_channel" style="margin-bottom:10px;">
+        <option value="">All Traffic</option>
+        <option value="Organic Search">Organic Search</option>
+        <option value="Direct">Direct</option>
+        <option value="Referral">Referral</option>
+        <option value="Organic Social">Organic Social</option>
+        <option value="Paid Search">Paid Search</option>
+        <option value="Email">Email</option>
+        <option value="Affiliates">Affiliates</option>
+        <option value="Unassigned">Unassigned</option>
+      </select>
+      <label>Country <span style="font-weight:400;color:#999;font-size:11px;">(ISO e.g. IN, US)</span></label>
+      <input type="text" id="tr_country" placeholder="Leave blank for all" style="margin-bottom:6px;">
+    </div>
+
+    <label style="margin-top:10px;">Output Sheet Name</label>
+    <input type="text" id="tr_sheet" value="GA4 Traffic" style="margin-bottom:0;">
+    <button class="primary-btn" id="tr_btn" onclick="runFetch('traffic')">Fetch Traffic Data</button>
+    <div id="tr_prog" style="display:none;margin-top:10px;">
+      <div id="tr_progText" style="font-size:11px;margin-bottom:4px;color:var(--text-sub);">Fetching...</div>
+      <div class="progress-container"><div class="fetch-progress-bar"></div></div>
+    </div>
+    <div id="tr_status" class="status"></div>
+  </div>
+
+  <!-- ================================================ -->
+  <!-- TAB 2: AUDIENCE                                  -->
+  <!-- ================================================ -->
+  <div id="audienceSection" class="section" style="display:none;">
+    <div class="month-selector">
+      <div class="month-selector-header"><label>Date Range</label></div>
+      <select id="au_dateMode" onchange="handleDateMode('au')">
+        <option value="last_7">Last 7 days</option>
+        <option value="last_28">Last 28 days</option>
+        <option value="last_30" selected>Last 30 days</option>
+        <option value="last_90">Last 90 days</option>
+        <option value="last_6m">Last 6 months</option>
+        <option value="last_12m">Last 12 months</option>
+        <option value="custom_date">Custom Date</option>
+        <option value="custom_month">Custom Month</option>
+      </select>
+      <div id="au_customDate" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Date</span>
+        <input type="date" id="au_startDate" style="margin-bottom:8px;" onchange="updatePreview('au')">
+        <span class="month-range-label">End Date</span>
+        <input type="date" id="au_endDate" style="margin:0;" onchange="updatePreview('au')">
+      </div>
+      <div id="au_customMonth" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Month</span>
+        <input type="month" id="au_startMonth" style="margin-bottom:8px;" onchange="updatePreview('au')">
+        <span class="month-range-label">End Month</span>
+        <input type="month" id="au_endMonth" style="margin:0;" onchange="updatePreview('au')">
+      </div>
+      <div id="au_preview" class="date-preview"></div>
+    </div>
+
+    <!-- METRICS -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;margin-top:10px;">
+      <span class="section-label" style="margin:0;">Metrics</span>
+      <button class="btn-small" onclick="openMetricsModal('audience')" style="font-size:11px;padding:4px 8px;">+ Select</button>
+    </div>
+
+    <!-- EVENTS — button trigger -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;margin-top:10px;">
+      <span class="section-label" style="margin:0;">Events <span class="info-tag">Optional</span></span>
+      <button class="btn-small" onclick="openKeyEventsModal('audience')" style="font-size:11px;padding:4px 8px;">+ Select</button>
+    </div>
+    <div id="au_keBadge" style="font-size:11px;color:var(--text-sub);margin-bottom:6px;"></div>
+
+    <label>Break Down By</label>
+    <select id="au_dimension" style="margin-bottom:12px;">
+      <option value="country">Country</option>
+      <option value="city">City</option>
+      <option value="region">Region</option>
+      <option value="deviceCategory">Device Category</option>
+      <option value="browser">Browser</option>
+      <option value="operatingSystem">Operating System</option>
+      <option value="language">Language</option>
+      <option value="userAgeBracket">Age Bracket</option>
+      <option value="userGender">Gender</option>
+      <option value="newVsReturning">New vs Returning</option>
+    </select>
+
+    <!-- DAILY BREAKDOWN -->
+    <label class="checkbox-wrap" style="margin-bottom:10px;border:1px solid #e0e0e0;padding:10px 8px;">
+      <input type="checkbox" id="au_daily">
+      <span style="font-size:12px;font-weight:500;">Daily Breakdown <span style="font-weight:400;color:#888;">(adds Date column)</span></span>
+    </label>
+
+    <!-- FILTERS accordion -->
+    <div class="accordion-header" id="au_filterHeader" onclick="toggleAccordion('au_filter','au_filterHeader')">
+      <span>Filters <span class="info-tag">Optional</span></span>
+      <span class="accordion-arrow">▼</span>
+    </div>
+    <div class="accordion-content" id="au_filter">
+      <label>Channel</label>
+      <select id="au_channel" style="margin-bottom:10px;">
+        <option value="">All Traffic</option>
+        <option value="Organic Search">Organic Search</option>
+        <option value="Direct">Direct</option>
+        <option value="Referral">Referral</option>
+        <option value="Organic Social">Organic Social</option>
+        <option value="Paid Search">Paid Search</option>
+        <option value="Email">Email</option>
+        <option value="Affiliates">Affiliates</option>
+        <option value="Unassigned">Unassigned</option>
+      </select>
+      <label>Country <span style="font-weight:400;color:#999;font-size:11px;">(ISO e.g. IN, US)</span></label>
+      <input type="text" id="au_country" placeholder="Leave blank for all" style="margin-bottom:6px;">
+    </div>
+
+    <label style="margin-top:4px;">Output Sheet Name</label>
+    <input type="text" id="au_sheet" value="GA4 Audience" style="margin-bottom:0;">
+    <button class="primary-btn" id="au_btn" onclick="runFetch('audience')">Fetch Audience Data</button>
+    <div id="au_prog" style="display:none;margin-top:10px;">
+      <div id="au_progText" style="font-size:11px;margin-bottom:4px;color:var(--text-sub);">Fetching...</div>
+      <div class="progress-container"><div class="fetch-progress-bar"></div></div>
+    </div>
+    <div id="au_status" class="status"></div>
+  </div>
+
+  <!-- ================================================ -->
+  <!-- TAB 3: PAGES                                     -->
+  <!-- ================================================ -->
+  <div id="pagesSection" class="section" style="display:none;">
+    <div class="month-selector">
+      <div class="month-selector-header"><label>Date Range</label></div>
+      <select id="pg_dateMode" onchange="handleDateMode('pg')">
+        <option value="last_7">Last 7 days</option>
+        <option value="last_28">Last 28 days</option>
+        <option value="last_30" selected>Last 30 days</option>
+        <option value="last_90">Last 90 days</option>
+        <option value="last_6m">Last 6 months</option>
+        <option value="last_12m">Last 12 months</option>
+        <option value="custom_date">Custom Date</option>
+        <option value="custom_month">Custom Month</option>
+      </select>
+      <div id="pg_customDate" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Date</span>
+        <input type="date" id="pg_startDate" style="margin-bottom:8px;" onchange="updatePreview('pg')">
+        <span class="month-range-label">End Date</span>
+        <input type="date" id="pg_endDate" style="margin:0;" onchange="updatePreview('pg')">
+      </div>
+      <div id="pg_customMonth" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Month</span>
+        <input type="month" id="pg_startMonth" style="margin-bottom:8px;" onchange="updatePreview('pg')">
+        <span class="month-range-label">End Month</span>
+        <input type="month" id="pg_endMonth" style="margin:0;" onchange="updatePreview('pg')">
+      </div>
+      <div id="pg_preview" class="date-preview"></div>
+    </div>
+
+    <!-- METRICS -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;margin-top:10px;">
+      <span class="section-label" style="margin:0;">Metrics</span>
+      <button class="btn-small" onclick="openMetricsModal('pages')" style="font-size:11px;padding:4px 8px;">+ Select</button>
+    </div>
+
+    <!-- EVENTS — button trigger -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;margin-top:10px;">
+      <span class="section-label" style="margin:0;">Events <span class="info-tag">Optional</span></span>
+      <button class="btn-small" onclick="openKeyEventsModal('pages')" style="font-size:11px;padding:4px 8px;">+ Select</button>
+    </div>
+    <div id="pg_keBadge" style="font-size:11px;color:var(--text-sub);margin-bottom:6px;"></div>
+
+    <!-- PAGE FILTER — modal trigger like URL modal in GSC -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span class="section-label" style="margin:0;">Page Filter <span class="info-tag">Optional</span></span>
+      <button class="btn-small" onclick="openPageModal()" style="font-size:11px;padding:4px 8px;">+ Add Pages</button>
+    </div>
+    <div id="pg_pageDisplay" style="display:none;font-size:11px;color:var(--text-sub);margin-bottom:10px;">
+      <span id="pg_pageCount"></span>
+      <button onclick="openPageModal()" style="background:none;border:none;color:#000;text-decoration:underline;cursor:pointer;font-size:11px;padding:0;margin-left:6px;">Edit</button>
+    </div>
+
+    <label>Break Down By</label>
+    <select id="pg_dimension" style="margin-bottom:12px;">
+      <option value="pagePath">Page Path</option>
+      <option value="pageTitle">Page Title</option>
+      <option value="fullPageUrl">Full URL</option>
+      <option value="landingPage">Landing Page</option>
+    </select>
+
+    <!-- DAILY BREAKDOWN -->
+    <label class="checkbox-wrap" style="margin-bottom:10px;border:1px solid #e0e0e0;padding:10px 8px;">
+      <input type="checkbox" id="pg_daily">
+      <span style="font-size:12px;font-weight:500;">Daily Breakdown <span style="font-weight:400;color:#888;">(adds Date column)</span></span>
+    </label>
+
+    <!-- FILTERS accordion -->
+    <div class="accordion-header" id="pg_filterHeader" onclick="toggleAccordion('pg_filter','pg_filterHeader')">
+      <span>Filters <span class="info-tag">Optional</span></span>
+      <span class="accordion-arrow">▼</span>
+    </div>
+    <div class="accordion-content" id="pg_filter">
+      <label>Channel</label>
+      <select id="pg_channel" style="margin-bottom:10px;">
+        <option value="">All Traffic</option>
+        <option value="Organic Search">Organic Search</option>
+        <option value="Direct">Direct</option>
+        <option value="Referral">Referral</option>
+        <option value="Organic Social">Organic Social</option>
+        <option value="Paid Search">Paid Search</option>
+        <option value="Email">Email</option>
+        <option value="Affiliates">Affiliates</option>
+        <option value="Unassigned">Unassigned</option>
+      </select>
+      <label>Country <span style="font-weight:400;color:#999;font-size:11px;">(ISO e.g. IN, US)</span></label>
+      <input type="text" id="pg_country" placeholder="Leave blank for all" style="margin-bottom:6px;">
+    </div>
+
+
+    <label>Output Sheet Name</label>
+    <input type="text" id="pg_sheet" value="GA4 Pages" style="margin-bottom:0;">
+    <button class="primary-btn" id="pg_btn" onclick="runFetch('pages')">Fetch Pages Data</button>
+    <div id="pg_prog" style="display:none;margin-top:10px;">
+      <div id="pg_progText" style="font-size:11px;margin-bottom:4px;color:var(--text-sub);">Fetching...</div>
+      <div class="progress-container"><div class="fetch-progress-bar"></div></div>
+    </div>
+    <div id="pg_status" class="status"></div>
+  </div>
+
+  <!-- ================================================ -->
+  <!-- TAB 4: EVENTS                                    -->
+  <!-- ================================================ -->
+  <div id="eventsSection" class="section" style="display:none;">
+    <div class="month-selector">
+      <div class="month-selector-header"><label>Date Range</label></div>
+      <select id="ev_dateMode" onchange="handleDateMode('ev')">
+        <option value="last_7">Last 7 days</option>
+        <option value="last_28">Last 28 days</option>
+        <option value="last_30" selected>Last 30 days</option>
+        <option value="last_90">Last 90 days</option>
+        <option value="last_6m">Last 6 months</option>
+        <option value="last_12m">Last 12 months</option>
+        <option value="custom_date">Custom Date</option>
+        <option value="custom_month">Custom Month</option>
+      </select>
+      <div id="ev_customDate" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Date</span>
+        <input type="date" id="ev_startDate" style="margin-bottom:8px;" onchange="updatePreview('ev')">
+        <span class="month-range-label">End Date</span>
+        <input type="date" id="ev_endDate" style="margin:0;" onchange="updatePreview('ev')">
+      </div>
+      <div id="ev_customMonth" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Month</span>
+        <input type="month" id="ev_startMonth" style="margin-bottom:8px;" onchange="updatePreview('ev')">
+        <span class="month-range-label">End Month</span>
+        <input type="month" id="ev_endMonth" style="margin:0;" onchange="updatePreview('ev')">
+      </div>
+      <div id="ev_preview" class="date-preview"></div>
+    </div>
+
+    <label>Event Type</label>
+    <select id="ev_type" style="margin-bottom:12px;">
+      <option value="all">All Events</option>
+      <option value="key">Key Events (Conversions) Only</option>
+    </select>
+
+    <!-- SELECT EVENTS — button trigger (always visible) -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <span class="section-label" style="margin:0;">Select Events <span class="info-tag">Optional</span></span>
+      <button class="btn-small" onclick="openKeyEventsModal('events')" style="font-size:11px;padding:4px 8px;">+ Select</button>
+    </div>
+    <div id="ev_keBadge" style="font-size:11px;color:var(--text-sub);margin-bottom:6px;"></div>
+
+    <!-- DAILY BREAKDOWN -->
+    <label class="checkbox-wrap" style="margin-bottom:10px;border:1px solid #e0e0e0;padding:10px 8px;">
+      <input type="checkbox" id="ev_daily">
+      <span style="font-size:12px;font-weight:500;">Daily Breakdown <span style="font-weight:400;color:#888;">(adds Date column)</span></span>
+    </label>
+
+    <!-- FILTERS accordion -->
+    <div class="accordion-header" id="ev_filterHeader" onclick="toggleAccordion('ev_filter','ev_filterHeader')">
+      <span>Filters <span class="info-tag">Optional</span></span>
+      <span class="accordion-arrow">▼</span>
+    </div>
+    <div class="accordion-content" id="ev_filter">
+      <label>Channel</label>
+      <select id="ev_channel" style="margin-bottom:10px;">
+        <option value="">All Traffic</option>
+        <option value="Organic Search">Organic Search</option>
+        <option value="Direct">Direct</option>
+        <option value="Referral">Referral</option>
+        <option value="Organic Social">Organic Social</option>
+        <option value="Paid Search">Paid Search</option>
+        <option value="Email">Email</option>
+        <option value="Affiliates">Affiliates</option>
+        <option value="Unassigned">Unassigned</option>
+      </select>
+      <label>Country <span style="font-weight:400;color:#999;font-size:11px;">(ISO e.g. IN, US)</span></label>
+      <input type="text" id="ev_country" placeholder="Leave blank for all" style="margin-bottom:6px;">
+    </div>
+
+    <label style="margin-top:8px;">Break Down By</label>
+    <select id="ev_dim" style="margin-bottom:12px;">
+      <option value="">Event Name only (totals)</option>
+      <option value="date">+ Date</option>
+      <option value="sessionDefaultChannelGrouping">+ Channel</option>
+      <option value="deviceCategory">+ Device</option>
+      <option value="country">+ Country</option>
+      <option value="pagePath">+ Page</option>
+    </select>
+
+    <label>Output Sheet Name</label>
+    <input type="text" id="ev_sheet" value="GA4 Events" style="margin-bottom:0;">
+    <button class="primary-btn" id="ev_btn" onclick="runFetch('events')">Fetch Events Data</button>
+    <div id="ev_prog" style="display:none;margin-top:10px;">
+      <div id="ev_progText" style="font-size:11px;margin-bottom:4px;color:var(--text-sub);">Fetching...</div>
+      <div class="progress-container"><div class="fetch-progress-bar"></div></div>
+    </div>
+    <div id="ev_status" class="status"></div>
+  </div>
+
+  <!-- ================================================ -->
+  <!-- TAB 5: ECOMMERCE                                 -->
+  <!-- ================================================ -->
+  <div id="ecommerceSection" class="section" style="display:none;">
+    <div style="font-size:11px;color:var(--text-sub);background:#fafafa;border:1px solid #e0e0e0;padding:10px;margin-bottom:12px;line-height:1.5;">
+      ⚠️ Requires GA4 ecommerce tracking to be configured. Data will be empty if not set up.
+    </div>
+    <div class="month-selector">
+      <div class="month-selector-header"><label>Date Range</label></div>
+      <select id="ec_dateMode" onchange="handleDateMode('ec')">
+        <option value="last_7">Last 7 days</option>
+        <option value="last_28">Last 28 days</option>
+        <option value="last_30" selected>Last 30 days</option>
+        <option value="last_90">Last 90 days</option>
+        <option value="last_6m">Last 6 months</option>
+        <option value="last_12m">Last 12 months</option>
+        <option value="custom_date">Custom Date</option>
+        <option value="custom_month">Custom Month</option>
+      </select>
+      <div id="ec_customDate" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Date</span>
+        <input type="date" id="ec_startDate" style="margin-bottom:8px;" onchange="updatePreview('ec')">
+        <span class="month-range-label">End Date</span>
+        <input type="date" id="ec_endDate" style="margin:0;" onchange="updatePreview('ec')">
+      </div>
+      <div id="ec_customMonth" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Month</span>
+        <input type="month" id="ec_startMonth" style="margin-bottom:8px;" onchange="updatePreview('ec')">
+        <span class="month-range-label">End Month</span>
+        <input type="month" id="ec_endMonth" style="margin:0;" onchange="updatePreview('ec')">
+      </div>
+      <div id="ec_preview" class="date-preview"></div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <span class="section-label" style="margin:0;">Metrics</span>
+      <button class="btn-small" onclick="openMetricsModal('ecommerce')" style="font-size:11px;padding:4px 8px;">+ Select</button>
+    </div>
+
+
+    <!-- DAILY BREAKDOWN -->
+    <label class="checkbox-wrap" style="margin-bottom:10px;border:1px solid #e0e0e0;padding:10px 8px;">
+      <input type="checkbox" id="ec_daily">
+      <span style="font-size:12px;font-weight:500;">Daily Breakdown <span style="font-weight:400;color:#888;">(adds Date column)</span></span>
+    </label>
+
+    <!-- FILTERS accordion -->
+    <div class="accordion-header" id="ec_filterHeader" onclick="toggleAccordion('ec_filter','ec_filterHeader')">
+      <span>Filters <span class="info-tag">Optional</span></span>
+      <span class="accordion-arrow">▼</span>
+    </div>
+    <div class="accordion-content" id="ec_filter">
+      <label>Channel</label>
+      <select id="ec_channel" style="margin-bottom:10px;">
+        <option value="">All Traffic</option>
+        <option value="Organic Search">Organic Search</option>
+        <option value="Direct">Direct</option>
+        <option value="Referral">Referral</option>
+        <option value="Organic Social">Organic Social</option>
+        <option value="Paid Search">Paid Search</option>
+        <option value="Email">Email</option>
+        <option value="Affiliates">Affiliates</option>
+        <option value="Unassigned">Unassigned</option>
+      </select>
+      <label>Country <span style="font-weight:400;color:#999;font-size:11px;">(ISO e.g. IN, US)</span></label>
+      <input type="text" id="ec_country" placeholder="Leave blank for all" style="margin-bottom:6px;">
+    </div>
+
+    <label style="margin-top:10px;">Break Down By</label>
+    <select id="ec_dim" style="margin-bottom:12px;">
+      <option value="">Totals only</option>
+      <option value="date">Date</option>
+      <option value="sessionDefaultChannelGrouping">Channel</option>
+      <option value="itemName">Item Name</option>
+      <option value="itemCategory">Item Category</option>
+      <option value="transactionId">Transaction ID</option>
+    </select>
+
+    <label>Output Sheet Name</label>
+    <input type="text" id="ec_sheet" value="GA4 Ecommerce" style="margin-bottom:0;">
+    <button class="primary-btn" id="ec_btn" onclick="runFetch('ecommerce')">Fetch Ecommerce Data</button>
+    <div id="ec_prog" style="display:none;margin-top:10px;">
+      <div id="ec_progText" style="font-size:11px;margin-bottom:4px;color:var(--text-sub);">Fetching...</div>
+      <div class="progress-container"><div class="fetch-progress-bar"></div></div>
+    </div>
+    <div id="ec_status" class="status"></div>
+  </div>
+
+  <!-- ================================================ -->
+  <!-- TAB 6: LLM TRAFFIC                               -->
+  <!-- ================================================ -->
+  <div id="llmSection" class="section" style="display:none;">
+
+    <div style="font-size:11px;color:var(--text-sub);background:#fafafa;border:1px solid #e0e0e0;padding:10px;margin-bottom:12px;line-height:1.5;">
+      Fetches sessions and key events from AI/LLM referrers using <code style="font-size:10px;background:#eee;padding:1px 4px;">sessionSource</code> domain matching.
+    </div>
+
+    <div class="month-selector">
+      <div class="month-selector-header"><label>Date Range</label></div>
+      <select id="llm_dateMode" onchange="handleDateMode('llm')">
+        <option value="last_7">Last 7 days</option>
+        <option value="last_28">Last 28 days</option>
+        <option value="last_30" selected>Last 30 days</option>
+        <option value="last_90">Last 90 days</option>
+        <option value="last_6m">Last 6 months</option>
+        <option value="last_12m">Last 12 months</option>
+        <option value="custom_date">Custom Date</option>
+        <option value="custom_month">Custom Month (MoM)</option>
+      </select>
+      <div id="llm_customDate" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Date</span>
+        <input type="date" id="llm_startDate" style="margin-bottom:8px;" onchange="updatePreview('llm')">
+        <span class="month-range-label">End Date</span>
+        <input type="date" id="llm_endDate" style="margin:0;" onchange="updatePreview('llm')">
+      </div>
+      <div id="llm_customMonth" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Month</span>
+        <input type="month" id="llm_startMonth" style="margin-bottom:8px;" onchange="updatePreview('llm')">
+        <span class="month-range-label">End Month</span>
+        <input type="month" id="llm_endMonth" style="margin:0;" onchange="updatePreview('llm')">
+      </div>
+      <div id="llm_preview" class="date-preview"></div>
+    </div>
+
+    <!-- LLM SOURCES -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <span class="section-label" style="margin:0;">LLM Sources</span>
+      <button class="btn-small" onclick="toggleAllLLMSrc()" style="font-size:10px;padding:2px 7px;">Toggle All</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:10px;">
+      <label class="checkbox-wrap"><input type="checkbox" class="llm-src" value="chatgpt.com" checked><span>ChatGPT</span></label>
+      <label class="checkbox-wrap"><input type="checkbox" class="llm-src" value="gemini.google.com" checked><span>Gemini</span></label>
+      <label class="checkbox-wrap"><input type="checkbox" class="llm-src" value="claude.ai" checked><span>Claude</span></label>
+      <label class="checkbox-wrap"><input type="checkbox" class="llm-src" value="grok.x.ai" checked><span>Grok</span></label>
+      <label class="checkbox-wrap"><input type="checkbox" class="llm-src" value="perplexity.ai" checked><span>Perplexity</span></label>
+      <label class="checkbox-wrap"><input type="checkbox" class="llm-src" value="copilot.microsoft.com" checked><span>Copilot</span></label>
+    </div>
+    <label>Custom Source Domain <span class="info-tag">Optional</span></label>
+    <input type="text" id="llm_customSrc" placeholder="e.g. you.com, phind.com (comma-separated)" style="margin-bottom:12px;">
+
+    <!-- WHAT TO FETCH -->
+    <label>Fetch</label>
+    <select id="llm_fetchType" onchange="handleLLMFetchType()" style="margin-bottom:12px;">
+      <option value="sessions">Sessions &amp; Traffic only</option>
+      <option value="events">Key Events only</option>
+      <option value="both" selected>Both (Sessions + Key Events)</option>
+    </select>
+
+    <!-- KEY EVENTS — button trigger -->
+    <div id="llm_keSection">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span class="section-label" style="margin:0;">Key Events <span class="info-tag">Optional</span></span>
+        <button class="btn-small" onclick="openKeyEventsModal('llm')" style="font-size:11px;padding:4px 8px;">+ Select</button>
+      </div>
+      <div id="llm_keBadge" style="font-size:11px;color:var(--text-sub);margin-bottom:6px;"></div>
+    </div>
+
+    <!-- DAILY BREAKDOWN + LANDING PAGE -->
+    <label class="checkbox-wrap" style="margin-top:12px;margin-bottom:6px;border:1px solid #e0e0e0;padding:10px 8px;">
+      <input type="checkbox" id="llm_daily">
+      <span style="font-size:12px;font-weight:500;">Daily Breakdown <span style="font-weight:400;color:#888;">(adds Date column)</span></span>
+    </label>
+    <label class="checkbox-wrap" style="margin-bottom:10px;border:1px solid #e0e0e0;padding:10px 8px;">
+      <input type="checkbox" id="llm_landing" checked>
+      <span style="font-size:12px;font-weight:500;">Include Landing Page <span style="font-weight:400;color:#888;">(page that received traffic)</span></span>
+    </label>
+
+    <label>Output Sheet Name</label>
+    <div style="font-size:11px;color:var(--text-sub);margin-bottom:6px;">Sessions → <strong id="llm_sessSheetPreview">GA4 LLM Traffic</strong> &nbsp;·&nbsp; Events → <strong id="llm_evSheetPreview">GA4 LLM Traffic - Events</strong></div>
+    <input type="text" id="llm_sheet" value="GA4 LLM Traffic" style="margin-bottom:0;" oninput="updateLLMSheetPreview()">
+    <button class="primary-btn" id="llm_btn" onclick="runLLMFetch()">Fetch LLM Data</button>
+    <div id="llm_prog" style="display:none;margin-top:10px;">
+      <div id="llm_progText" style="font-size:11px;margin-bottom:4px;color:var(--text-sub);">Fetching...</div>
+      <div class="progress-container"><div class="fetch-progress-bar"></div></div>
+    </div>
+    <div id="llm_status" class="status"></div>
+  </div>
+
+  <!-- ================================================ -->
+  <!-- TAB 7: UTM                                       -->
+  <!-- ================================================ -->
+  <div id="utmSection" class="section" style="display:none;">
+    <div class="month-selector">
+      <div class="month-selector-header"><label>Date Range</label></div>
+      <select id="utm_dateMode" onchange="handleDateMode('utm')">
+        <option value="last_7">Last 7 days</option>
+        <option value="last_28">Last 28 days</option>
+        <option value="last_30" selected>Last 30 days</option>
+        <option value="last_90">Last 90 days</option>
+        <option value="last_6m">Last 6 months</option>
+        <option value="last_12m">Last 12 months</option>
+        <option value="custom_date">Custom Date</option>
+        <option value="custom_month">Custom Month</option>
+      </select>
+      <div id="utm_customDate" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Date</span>
+        <input type="date" id="utm_startDate" style="margin-bottom:8px;" onchange="updatePreview('utm')">
+        <span class="month-range-label">End Date</span>
+        <input type="date" id="utm_endDate" style="margin:0;" onchange="updatePreview('utm')">
+      </div>
+      <div id="utm_customMonth" style="display:none;margin-top:8px;">
+        <span class="month-range-label">Start Month</span>
+        <input type="month" id="utm_startMonth" style="margin-bottom:8px;" onchange="updatePreview('utm')">
+        <span class="month-range-label">End Month</span>
+        <input type="month" id="utm_endMonth" style="margin:0;" onchange="updatePreview('utm')">
+      </div>
+      <div id="utm_preview" class="date-preview"></div>
+    </div>
+
+    <!-- METRICS -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;margin-top:10px;">
+      <span class="section-label" style="margin:0;">Metrics</span>
+      <button class="btn-small" onclick="openMetricsModal('utm')" style="font-size:11px;padding:4px 8px;">+ Select</button>
+    </div>
+
+
+    <!-- UTM DIMENSIONS -->
+    <div class="section-label">UTM Parameters to Include</div>
+    <div class="metric-grid" style="margin-bottom:12px;">
+      <label class="checkbox-wrap"><input type="checkbox" name="utm_dim" value="sessionCampaignName" checked><span>Campaign</span></label>
+      <label class="checkbox-wrap"><input type="checkbox" name="utm_dim" value="sessionSource" checked><span>Source</span></label>
+      <label class="checkbox-wrap"><input type="checkbox" name="utm_dim" value="sessionMedium" checked><span>Medium</span></label>
+      <label class="checkbox-wrap"><input type="checkbox" name="utm_dim" value="sessionSourceMedium"><span>Source/Medium</span></label>
+      <label class="checkbox-wrap"><input type="checkbox" name="utm_dim" value="sessionCampaignId"><span>Campaign ID</span></label>
+      <label class="checkbox-wrap"><input type="checkbox" name="utm_dim" value="sessionManualAdContent"><span>Ad Content</span></label>
+      <label class="checkbox-wrap"><input type="checkbox" name="utm_dim" value="sessionManualTerm"><span>Term</span></label>
+      <label class="checkbox-wrap"><input type="checkbox" name="utm_dim" value="googleAdsKeyword"><span>GA Keyword</span></label>
+    </div>
+
+    <!-- DAILY BREAKDOWN -->
+    <label class="checkbox-wrap" style="margin-bottom:10px;border:1px solid #e0e0e0;padding:10px 8px;">
+      <input type="checkbox" id="utm_daily">
+      <span style="font-size:12px;font-weight:500;">Daily Breakdown <span style="font-weight:400;color:#888;">(adds Date column)</span></span>
+    </label>
+
+    <!-- KEY EVENTS — button trigger -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;margin-top:4px;">
+      <span class="section-label" style="margin:0;">Key Events <span class="info-tag">Optional</span></span>
+      <button class="btn-small" onclick="openKeyEventsModal('utm')" style="font-size:11px;padding:4px 8px;">+ Select</button>
+    </div>
+    <div id="utm_keBadge" style="font-size:11px;color:var(--text-sub);margin-bottom:6px;"></div>
+
+    <!-- FILTERS accordion -->
+    <div class="accordion-header" id="utm_filterHeader" onclick="toggleAccordion('utm_filter','utm_filterHeader')">
+      <span>Filters <span class="info-tag">Optional</span></span>
+      <span class="accordion-arrow">▼</span>
+    </div>
+    <div class="accordion-content" id="utm_filter">
+      <label>Campaign contains</label>
+      <input type="text" id="utm_campaignFilter" placeholder="e.g. black-friday" style="margin-bottom:10px;">
+      <label>Source contains</label>
+      <input type="text" id="utm_sourceFilter" placeholder="e.g. google" style="margin-bottom:10px;">
+      <label>Medium contains</label>
+      <input type="text" id="utm_mediumFilter" placeholder="e.g. cpc" style="margin-bottom:6px;">
+    </div>
+
+    <label>Output Sheet Name</label>
+    <input type="text" id="utm_sheet" value="GA4 UTM" style="margin-bottom:0;">
+    <button class="primary-btn" id="utm_btn" onclick="runFetch('utm')">Fetch UTM Data</button>
+    <div id="utm_prog" style="display:none;margin-top:10px;">
+      <div id="utm_progText" style="font-size:11px;margin-bottom:4px;color:var(--text-sub);">Fetching...</div>
+      <div class="progress-container"><div class="fetch-progress-bar"></div></div>
+    </div>
+    <div id="utm_status" class="status"></div>
+  </div>
+
+</div><!-- /mainContent -->
+
+<!-- ================================================ -->
+<!-- MODAL: METRICS SELECTOR                          -->
+<!-- ================================================ -->
+<div id="metricsModal" class="modal-overlay" onclick="handleOverlayClick(event,'metricsModal')">
+  <div class="modal-box">
+    <p class="modal-title" id="metricsModalTitle">Select Metrics</p>
+    <p class="modal-hint">Choose which metrics to fetch. At least one is required.</p>
+    <div style="display:flex;gap:12px;margin-bottom:8px;font-size:12px;padding:0 2px;">
+      <a href="javascript:void(0)" onclick="toggleAllModalMetrics(true)" style="color:#000;text-decoration:underline;font-weight:500;">Select All</a>
+      <a href="javascript:void(0)" onclick="toggleAllModalMetrics(false)" style="color:#555;text-decoration:underline;font-weight:500;">Clear All</a>
+    </div>
+    <div id="metricsModalGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:2px;"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('metricsModal')">Cancel</button>
+      <button class="btn-confirm" onclick="confirmMetrics()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================ -->
+<!-- MODAL: PAGE FILTER (like URL modal in GSC)       -->
+<!-- ================================================ -->
+<div id="pageModal" class="modal-overlay" onclick="handleOverlayClick(event,'pageModal')">
+  <div class="modal-box">
+    <p class="modal-title">Filter by Page Paths</p>
+    <p class="modal-hint">One path per line. Fetches all pages if left empty. Supports partial paths (e.g. /blog/).</p>
+    <textarea class="modal-textarea" id="pageModalInput" placeholder="/blog/&#10;/products/&#10;/contact/us" oninput="updatePageCounter()"></textarea>
+    <p class="modal-counter" id="pageModalCounter">0 pages</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('pageModal')">Cancel</button>
+      <button class="btn-confirm" onclick="confirmPages()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================ -->
+<!-- MODAL: KEY EVENTS SELECTOR                       -->
+<!-- ================================================ -->
+<div id="keyEventsModal" class="modal-overlay" onclick="handleOverlayClick(event,'keyEventsModal')">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <p class="modal-title" id="keModalTitle">Select Events</p>
+      <select id="keModalType" onchange="switchKEModalType()" style="width:auto;margin:0;padding:2px 4px;font-size:11px;">
+        <option value="key">Key Events</option>
+        <option value="all">All Events</option>
+      </select>
+    </div>
+    <p class="modal-hint">Choose events to include as extra columns. Leave empty to skip.</p>
+    <div id="keModalLoading" style="font-size:12px;color:#999;padding:8px 0;">Loading key events...</div>
+    <div id="keModalControls" style="display:none;">
+      <div style="display:flex;gap:12px;margin-bottom:8px;font-size:12px;padding:0 2px;">
+        <a href="javascript:void(0)" onclick="toggleAllModalKEItems(true)" style="color:#000;text-decoration:underline;font-weight:500;">Select All</a>
+        <a href="javascript:void(0)" onclick="toggleAllModalKEItems(false)" style="color:#555;text-decoration:underline;font-weight:500;">Clear All</a>
+      </div>
+      <div id="keModalGrid" style="max-height:300px;overflow-y:auto;"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('keyEventsModal')">Cancel</button>
+      <button class="btn-confirm" onclick="confirmKeyEventsModal()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="app-footer">
+  Made with ❤️ by&nbsp;<a href="https://www.linkedin.com/in/shah-harsh02/" target="_blank">HarsH</a>
+</div>
+
+<script>
+// =============================================
+// METRIC DEFINITIONS PER TAB
+// =============================================
+const METRICS_CONFIG = {
+  traffic: [
+    { v:'sessions',                  l:'Sessions',            def:true  },
+    { v:'totalUsers',                l:'Total Users',         def:true  },
+    { v:'newUsers',                  l:'New Users',           def:true  },
+    { v:'activeUsers',               l:'Active Users',        def:false },
+    { v:'engagedSessions',           l:'Engaged Sessions',    def:true  },
+    { v:'engagementRate',            l:'Engagement Rate',     def:false },
+    { v:'bounceRate',                l:'Bounce Rate',         def:false },
+    { v:'averageSessionDuration',    l:'Avg. Session Duration', def:false },
+    { v:'sessionsPerUser',           l:'Sessions per User',   def:false },
+    { v:'conversions',               l:'Conversions',         def:false },
+    { v:'userEngagementDuration',    l:'Engagement Duration',  def:false },
+    { v:'screenPageViews',           l:'Page Views',          def:false },
+    { v:'screenPageViewsPerSession', l:'Views per Session',   def:false },
+    { v:'screenPageViewsPerUser',    l:'Views per User',      def:false },
+    { v:'scrolledUsers',             l:'Scrolled Users',      def:false }
+  ],
+  audience: [
+    { v:'totalUsers',                l:'Total Users',         def:true  },
+    { v:'newUsers',                  l:'New Users',           def:true  },
+    { v:'activeUsers',               l:'Active Users',        def:false },
+    { v:'sessions',                  l:'Sessions',            def:true  },
+    { v:'engagedSessions',           l:'Engaged Sessions',    def:false },
+    { v:'bounceRate',                l:'Bounce Rate',         def:false },
+    { v:'averageSessionDuration',    l:'Avg. Session Duration', def:false },
+    { v:'engagementRate',            l:'Engagement Rate',     def:false },
+    { v:'sessionsPerUser',           l:'Sessions per User',   def:false },
+    { v:'conversions',               l:'Conversions',         def:false },
+    { v:'userEngagementDuration',    l:'Engagement Duration',  def:false },
+    { v:'screenPageViews',           l:'Page Views',          def:false },
+    { v:'screenPageViewsPerSession', l:'Views per Session',   def:false },
+    { v:'screenPageViewsPerUser',    l:'Views per User',      def:false },
+    { v:'scrolledUsers',             l:'Scrolled Users',      def:false }
+  ],
+  pages: [
+    { v:'screenPageViews',           l:'Page Views',          def:true  },
+    { v:'sessions',                  l:'Sessions',            def:true  },
+    { v:'totalUsers',                l:'Users',               def:false },
+    { v:'screenPageViewsPerSession', l:'Views per Session',   def:false },
+    { v:'averageSessionDuration',    l:'Avg. Session Duration', def:false },
+    { v:'bounceRate',                l:'Bounce Rate',         def:false },
+    { v:'activeUsers',               l:'Active Users',        def:false },
+    { v:'newUsers',                  l:'New Users',           def:false },
+    { v:'engagedSessions',           l:'Engaged Sessions',    def:false },
+    { v:'engagementRate',            l:'Engagement Rate',     def:false },
+    { v:'sessionsPerUser',           l:'Sessions per User',   def:false },
+    { v:'conversions',               l:'Conversions',         def:false },
+    { v:'userEngagementDuration',    l:'Engagement Duration',  def:false },
+    { v:'screenPageViewsPerUser',    l:'Views per User',      def:false },
+    { v:'scrolledUsers',             l:'Scrolled Users',      def:false }
+  ],
+  ecommerce: [
+    { v:'transactions',           l:'Transactions',          def:true  },
+    { v:'purchaseRevenue',        l:'Revenue',               def:true  },
+    { v:'ecommercePurchases',     l:'Purchases',             def:false },
+    { v:'averagePurchaseRevenue', l:'Avg. Order Value',      def:true  },
+    { v:'itemsPurchased',         l:'Items Purchased',       def:false },
+    { v:'purchaseToViewRate',     l:'Purchase Rate',         def:false },
+    { v:'itemsAddedToCart',       l:'Items Added to Cart',   def:false },
+    { v:'itemsCheckedOut',        l:'Items Checked Out',     def:false },
+    { v:'itemViews',              l:'Item Views',            def:false },
+    { v:'cartToViewRate',         l:'Cart-to-View Rate',     def:false },
+    { v:'itemRevenue',            l:'Item Revenue',          def:false },
+    { v:'totalUsers',             l:'Users',                 def:false },
+    { v:'activeUsers',            l:'Active Users',          def:false },
+    { v:'newUsers',               l:'New Users',             def:false },
+    { v:'sessions',               l:'Sessions',              def:false },
+    { v:'conversions',            l:'Conversions',           def:false }
+  ],
+  utm: [
+    { v:'sessions',                  l:'Sessions',            def:true  },
+    { v:'totalUsers',                l:'Total Users',         def:true  },
+    { v:'newUsers',                  l:'New Users',           def:false },
+    { v:'activeUsers',               l:'Active Users',        def:false },
+    { v:'engagedSessions',           l:'Engaged Sessions',    def:false },
+    { v:'engagementRate',            l:'Engagement Rate',     def:false },
+    { v:'bounceRate',                l:'Bounce Rate',         def:false },
+    { v:'averageSessionDuration',    l:'Avg. Session Duration', def:false },
+    { v:'sessionsPerUser',           l:'Sessions per User',   def:false },
+    { v:'conversions',               l:'Conversions',         def:false },
+    { v:'userEngagementDuration',    l:'Engagement Duration',  def:false },
+    { v:'screenPageViews',           l:'Page Views',          def:false },
+    { v:'screenPageViewsPerSession', l:'Views per Session',   def:false },
+    { v:'screenPageViewsPerUser',    l:'Views per User',      def:false },
+    { v:'scrolledUsers',             l:'Scrolled Users',      def:false }
+  ]
+};
+
+// active selections
+const activeMetrics = {};
+Object.keys(METRICS_CONFIG).forEach(function(tab) {
+  activeMetrics[tab] = METRICS_CONFIG[tab].filter(function(m){ return m.def; }).map(function(m){ return m.v; });
+});
+
+// =============================================
+// STATE
+// =============================================
+let allProperties    = [];
+let selectedPropId   = '';
+let keyEventsLoaded  = [];
+let audienceKeyEvents = []; // selected key events for Audience tab
+let pagesKeyEvents = [];    // selected key events for Pages tab
+let trafficKeyEvents = [];  // selected key events for Traffic tab
+let eventsKeyEvents = [];   // selected key events for Events tab
+let llmSelectedKeyEvents = [];   // selected key events for LLM tab
+let utmSelectedKeyEvents = [];   // selected key events for UTM tab
+let pageFilterPages  = [];
+let currentMetricsTab = 'traffic';
+let currentKEModalTab = '';      // which tab opened the KE modal
+let elapsedTimers    = {};
+let llmKeyEventsLoaded = [];
+let allEventsLoaded  = []; // all non-key events for Events tab
+
+// =============================================
+// INIT
+// =============================================
+document.addEventListener('DOMContentLoaded', function() {
+  loadProperties();
+  ['tr','au','pg','ev','ec','llm','utm'].forEach(function(p){ updatePreview(p); });
+  document.addEventListener('click', function(e) {
+    var dd = document.getElementById('propDropdown');
+    if (!dd.contains(e.target)) dd.classList.remove('open');
+  });
+  // Tab arrow init
+  var strip = document.getElementById('tabStrip');
+  if (strip) {
+    strip.addEventListener('scroll', updateTabArrows);
+    setTimeout(updateTabArrows, 100);
+  }
+});
+
+// =============================================
+// PROPERTY DROPDOWN
+// =============================================
+function loadProperties() {
+  document.getElementById('propList').innerHTML = '<div style="padding:10px;font-size:12px;color:#999;">Loading...</div>';
+  google.script.run
+    .withSuccessHandler(function(props){ allProperties=props||[]; renderPropList(allProperties); })
+    .withFailureHandler(function(e){ document.getElementById('propList').innerHTML='<div style="padding:10px;font-size:12px;color:red;">'+(e.message||e)+'</div>'; })
+    .getGA4Properties();
+}
+
+function refreshProps() {
+  var btn = document.getElementById('refreshPropsBtn');
+  btn.textContent='↻ ...'; btn.disabled=true;
+  document.getElementById('propList').innerHTML='<div style="padding:10px;font-size:12px;color:#999;">Refreshing...</div>';
+  google.script.run
+    .withSuccessHandler(function(props){ allProperties=props||[]; renderPropList(allProperties); btn.textContent='↻ Refresh'; btn.disabled=false; })
+    .withFailureHandler(function(){ btn.textContent='↻ Refresh'; btn.disabled=false; })
+    .getGA4PropertiesRefresh();
+}
+
+function renderPropList(props) {
+  var list = document.getElementById('propList');
+  if (!props.length) { list.innerHTML='<div style="padding:10px;font-size:12px;color:#999;">No properties found.</div>'; return; }
+  list.innerHTML = props.map(function(p){
+    return '<div class="site-item" onclick="selectProp(\''+esc(p.propertyId)+'\',\''+esc(p.displayName)+'\')">'
+      +'<div>'+esc(p.displayName)+'</div>'
+      +'<div class="site-sub">'+p.propertyId+' · '+esc(p.accountName)+'</div></div>';
+  }).join('');
+}
+
+function filterProps() {
+  var q = document.getElementById('propSearch').value.toLowerCase();
+  renderPropList(allProperties.filter(function(p){
+    return p.displayName.toLowerCase().includes(q)||p.propertyId.toLowerCase().includes(q)||(p.accountName||'').toLowerCase().includes(q);
+  }));
+}
+
+function selectProp(id, name) {
+  selectedPropId = id;
+  document.getElementById('propValue').value = id;
+  var t = document.getElementById('propSelectedText');
+  t.textContent = name; t.classList.remove('site-selected-placeholder');
+  document.getElementById('propDropdown').classList.remove('open');
+  // Load key events and all events once — shared by tabs
+  loadKeyEvents();
+}
+
+function togglePropDD() { document.getElementById('propDropdown').classList.toggle('open'); }
+
+// =============================================
+// TAB ARROW SCROLL
+// =============================================
+function scrollTabs(dir) {
+  var strip = document.getElementById('tabStrip');
+  strip.scrollLeft += dir * 80;
+  setTimeout(updateTabArrows, 120);
+}
+
+function updateTabArrows() {
+  var strip = document.getElementById('tabStrip');
+  var left  = document.getElementById('tabArrowLeft');
+  var right = document.getElementById('tabArrowRight');
+  if (!strip || !left || !right) return;
+  left.disabled  = strip.scrollLeft <= 0;
+  right.disabled = strip.scrollLeft >= strip.scrollWidth - strip.clientWidth - 1;
+}
+
+// =============================================
+// TAB SWITCHING
+// =============================================
+var TAB_SECTIONS = {
+  traffic:'trafficSection', audience:'audienceSection',
+  pages:'pagesSection', events:'eventsSection', ecommerce:'ecommerceSection',
+  llm:'llmSection', utm:'utmSection'
+};
+function switchTab(tab) {
+  Object.values(TAB_SECTIONS).forEach(function(id){ document.getElementById(id).style.display='none'; });
+  document.getElementById(TAB_SECTIONS[tab]).style.display='';
+  // Scroll active tab label into view
+  var checked = document.querySelector('input[name="ga4Mode"][value="'+tab+'"]');
+  if (checked) {
+    var lbl = checked.nextElementSibling;
+    if (lbl) lbl.scrollIntoView({behavior:'smooth', block:'nearest', inline:'nearest'});
+  }
+  setTimeout(updateTabArrows, 150);
+}
+
+// =============================================
+// DATE RANGE
+// =============================================
+function handleDateMode(prefix) {
+  var mode = document.getElementById(prefix+'_dateMode').value;
+  document.getElementById(prefix+'_customDate').style.display  = mode==='custom_date'  ? '' : 'none';
+  document.getElementById(prefix+'_customMonth').style.display = mode==='custom_month' ? '' : 'none';
+  updatePreview(prefix);
+}
+
+function updatePreview(prefix) {
+  var dr = resolveDateRange(prefix);
+  var el = document.getElementById(prefix+'_preview');
+  if (!el) return;
+  if (!dr) { el.textContent=''; return; }
+  if (dr.months) {
+    el.textContent = '📅 MoM: '+dr.months.length+' months ('+dr.months[0].label+' → '+dr.months[dr.months.length-1].label+')';
+  } else {
+    el.textContent = 'Range: '+dr.startDate+' → '+dr.endDate;
+  }
+}
+
+function resolveDateRange(prefix) {
+  var mode = document.getElementById(prefix+'_dateMode').value;
+  var today = new Date();
+  var fmt = function(d){ return d.toISOString().slice(0,10); };
+  var ago  = function(n){ var d=new Date(today); d.setDate(d.getDate()-n); return d; };
+  var agoM = function(n){ var d=new Date(today); d.setMonth(d.getMonth()-n); return d; };
+  var map = {
+    last_7:{startDate:fmt(ago(7)),endDate:fmt(ago(1))},
+    last_28:{startDate:fmt(ago(28)),endDate:fmt(ago(1))},
+    last_30:{startDate:fmt(ago(30)),endDate:fmt(ago(1))},
+    last_90:{startDate:fmt(ago(90)),endDate:fmt(ago(1))},
+    last_6m:{startDate:fmt(agoM(6)),endDate:fmt(ago(1))},
+    last_12m:{startDate:fmt(agoM(12)),endDate:fmt(ago(1))},
+  };
+  if (map[mode]) return map[mode];
+  if (mode==='custom_date') {
+    var s=(document.getElementById(prefix+'_startDate')||{}).value;
+    var e=(document.getElementById(prefix+'_endDate')||{}).value||fmt(ago(1));
+    return s?{startDate:s,endDate:e}:null;
+  }
+  if (mode==='custom_month') {
+    var sm=(document.getElementById(prefix+'_startMonth')||{}).value;
+    var em=(document.getElementById(prefix+'_endMonth')||{}).value;
+    if (!sm) return null;
+    // Multi-month range → return months array for MoM
+    if (em && em !== sm) {
+      var months = _expandMonthRange_(sm, em);
+      return months.length > 0 ? { months: months } : null;
+    }
+    // Single month
+    var parts=sm.split('-').map(Number), sy=parts[0], smo=parts[1];
+    var MNAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return {
+      startDate: fmt(new Date(sy,smo-1,1)),
+      endDate:   fmt(new Date(sy,smo,0)),
+      label:     MNAMES[smo-1]+' '+sy
+    };
+  }
+  return null;
+}
+
+function _expandMonthRange_(startYm, endYm) {
+  var MNAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var fmt = function(d){ return d.toISOString().slice(0,10); };
+  var sp=startYm.split('-').map(Number), y=sp[0], m=sp[1];
+  var ep=endYm.split('-').map(Number),   ey=ep[0], em=ep[1];
+  var result=[];
+  while (y<ey||(y===ey&&m<=em)) {
+    result.push({
+      startDate: fmt(new Date(y,m-1,1)),
+      endDate:   fmt(new Date(y,m,0)),
+      label:     MNAMES[m-1]+' '+y
+    });
+    m++; if(m>12){m=1;y++;}
+  }
+  return result;
+}
+
+// =============================================
+// ACCORDION
+// =============================================
+function toggleAccordion(contentId, headerId) {
+  document.getElementById(contentId).classList.toggle('open');
+  if (headerId) document.getElementById(headerId).classList.toggle('open');
+}
+
+function toggleAllModalMetrics(checked) {
+  var checkboxes = document.querySelectorAll('input[name="modalMetric"]');
+  checkboxes.forEach(function(cb) {
+    if (!cb.disabled) {
+      cb.checked = checked;
+    }
+  });
+}
+
+function toggleAllModalKE(checked) {
+  var keInputName = currentMetricsTab === 'traffic' ? 'trKEMetric' : (currentMetricsTab === 'audience' ? 'auKEMetric' : 'pgKEMetric');
+  var checkboxes = document.querySelectorAll('input[name="' + keInputName + '"]');
+  checkboxes.forEach(function(cb) {
+    cb.checked = checked;
+  });
+}
+
+// =============================================
+// METRICS MODAL
+// =============================================
+function openMetricsModal(tab) {
+  currentMetricsTab = tab;
+  var config = METRICS_CONFIG[tab]; if (!config) return;
+  var titles = {traffic:'Traffic',audience:'Audience',pages:'Pages',ecommerce:'Ecommerce',utm:'UTM'};
+  document.getElementById('metricsModalTitle').textContent = 'Select Metrics — ' + (titles[tab]||tab);
+  var active = activeMetrics[tab]||[];
+
+  // For UTM: determine which metrics are incompatible based on currently checked dims
+  var utmExtendedDims = ['googleAdsKeyword','sessionCampaignId','sessionManualAdContent','sessionManualTerm'];
+  var utmRestrictedMetrics = ['bounceRate','engagementRate','averageSessionDuration','engagedSessions','sessionsPerUser','newUsers'];
+  var hasExtendedDim = false;
+  if (tab === 'utm') {
+    var checkedDims = [...document.querySelectorAll('input[name="utm_dim"]:checked')].map(function(c){return c.value;});
+    hasExtendedDim = checkedDims.some(function(d){ return utmExtendedDims.indexOf(d) !== -1; });
+  }
+
+  var metricsHtml = config.map(function(m){
+    var disabled = tab==='utm' && (
+      m.v === 'newUsers' ||
+      (hasExtendedDim && utmRestrictedMetrics.indexOf(m.v) !== -1)
+    );
+    var hint = disabled ? (m.v==='newUsers' ? '(incompatible with UTM)' : '(needs basic dims only)') : '';
+    return '<label class="checkbox-wrap'+(disabled?' metric-disabled':'')+'" style="padding:6px;"'+(disabled?' title="'+hint+'"':'')+' >'
+      +'<input type="checkbox" name="modalMetric" value="'+m.v+'"'+(active.includes(m.v)&&!disabled?' checked':'')+(disabled?' disabled':'')+' >'
+      +'<span>'+m.l+(disabled?' <span style="font-size:10px;color:#aaa;">(N/A)</span>':'')+'</span></label>';
+  }).join('');
+
+  document.getElementById('metricsModalGrid').innerHTML = metricsHtml;
+  document.getElementById('metricsModal').classList.add('open');
+}
+
+function confirmMetrics() {
+  var checked=[...document.querySelectorAll('input[name="modalMetric"]:checked')].map(function(c){return c.value;});
+  if (!checked.length){alert('Select at least one metric.');return;}
+  activeMetrics[currentMetricsTab]=checked;
+  updateMetricsBadge(currentMetricsTab);
+  closeModal('metricsModal');
+}
+
+function resetMetrics(tab) {
+  activeMetrics[tab]=METRICS_CONFIG[tab].filter(function(m){return m.def;}).map(function(m){return m.v;});
+  if (tab === 'traffic') trafficKeyEvents = [];
+  if (tab === 'audience') audienceKeyEvents = [];
+  if (tab === 'pages') pagesKeyEvents = [];
+  updateMetricsBadge(tab);
+}
+
+function updateMetricsBadge(tab) {
+  // No-op — badge display removed per user request
+}
+
+// =============================================
+// PAGE FILTER MODAL
+// =============================================
+function openPageModal() {
+  document.getElementById('pageModalInput').value=pageFilterPages.join('\n');
+  updatePageCounter();
+  document.getElementById('pageModal').classList.add('open');
+  setTimeout(function(){document.getElementById('pageModalInput').focus();},50);
+}
+
+function updatePageCounter() {
+  var lines=document.getElementById('pageModalInput').value.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  document.getElementById('pageModalCounter').textContent=lines.length+' page'+(lines.length!==1?'s':'');
+}
+
+function confirmPages() {
+  pageFilterPages=document.getElementById('pageModalInput').value.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  var disp=document.getElementById('pg_pageDisplay');
+  var cnt=document.getElementById('pg_pageCount');
+  if (pageFilterPages.length){
+    cnt.textContent=pageFilterPages.length+' page'+(pageFilterPages.length!==1?'s':'')+' added';
+    disp.style.display='block';
+  } else { disp.style.display='none'; }
+  closeModal('pageModal');
+}
+
+// =============================================
+// KEY EVENTS — dynamic, loaded from property (shared)
+// =============================================
+function loadKeyEvents() {
+  if (!selectedPropId) return;
+  google.script.run
+    .withSuccessHandler(function(events){
+      keyEventsLoaded = events || [];
+      llmKeyEventsLoaded = keyEventsLoaded; // same data, shared
+    })
+    .withFailureHandler(function(e){ keyEventsLoaded = []; llmKeyEventsLoaded = []; })
+    .getGA4KeyEventsForSidebar(selectedPropId);
+
+  // Also pre-load all events for the Events tab
+  google.script.run
+    .withSuccessHandler(function(events){
+      allEventsLoaded = events || [];
+    })
+    .withFailureHandler(function(e){ allEventsLoaded = []; })
+    .getAllGA4EventsForSidebar(selectedPropId);
+}
+
+// =============================================
+// KEY EVENTS MODAL (shared by Events, LLM, UTM)
+// =============================================
+function openKeyEventsModal(tab) {
+  currentKEModalTab = tab;
+  if (!selectedPropId) return alert('Select a GA4 property first.');
+
+  var isAllEvents = (document.getElementById('keModalType').value === 'all');
+  var titles = {events:'Events', llm:'LLM', utm:'UTM', traffic:'Traffic', audience:'Audience', pages:'Pages'};
+  document.getElementById('keModalTitle').textContent = 'Select ' + (isAllEvents ? 'Events' : 'Key Events') + ' — ' + (titles[tab]||tab);
+  document.getElementById('keModalLoading').textContent = 'Loading ' + (isAllEvents ? 'events' : 'key events') + '...';
+
+  var dataArray = isAllEvents ? allEventsLoaded : keyEventsLoaded;
+  var fetchFn = isAllEvents ? 'getAllGA4EventsForSidebar' : 'getGA4KeyEventsForSidebar';
+
+  // If events not loaded yet, load them now
+  if (!dataArray || !dataArray.length) {
+    document.getElementById('keModalLoading').style.display = '';
+    document.getElementById('keModalControls').style.display = 'none';
+    document.getElementById('keModalGrid').innerHTML = '';
+    document.getElementById('keyEventsModal').classList.add('open');
+    
+    google.script.run
+      .withSuccessHandler(function(events) {
+        if (isAllEvents) allEventsLoaded = events || [];
+        else { keyEventsLoaded = events || []; llmKeyEventsLoaded = keyEventsLoaded; }
+        _renderKEModalGrid();
+      })
+      .withFailureHandler(function(e) {
+        document.getElementById('keModalLoading').textContent = 'Error: ' + (e.message||e);
+      })
+      [fetchFn](selectedPropId);
+    return;
+  }
+
+  _renderKEModalGrid();
+  document.getElementById('keyEventsModal').classList.add('open');
+}
+
+function switchKEModalType() {
+  openKeyEventsModal(currentKEModalTab);
+}
+
+function _renderKEModalGrid() {
+  var loading  = document.getElementById('keModalLoading');
+  var controls = document.getElementById('keModalControls');
+  var grid     = document.getElementById('keModalGrid');
+  var isAllEvents = (document.getElementById('keModalType').value === 'all');
+  var dataArray = isAllEvents ? allEventsLoaded : keyEventsLoaded;
+
+  if (!dataArray || !dataArray.length) {
+    loading.textContent = 'No ' + (isAllEvents ? 'events' : 'key events') + ' found for this property.';
+    loading.style.display = '';
+    controls.style.display = 'none';
+    return;
+  }
+
+  loading.style.display = 'none';
+  controls.style.display = '';
+
+  // Get current selections for the active tab
+  var selected = _getKESelectionsForTab(currentKEModalTab);
+
+  grid.innerHTML = dataArray.map(function(ev) {
+    var isChecked = selected.indexOf(ev) !== -1;
+    return '<label class="checkbox-wrap" style="padding:5px 4px;">'
+      +'<input type="checkbox" name="keModalItem" value="'+esc(ev)+'"'+(isChecked?' checked':'')+'>'
+      +'<span style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+esc(ev)+'">'+esc(ev)+'</span>'
+      +'</label>';
+  }).join('');
+}
+
+function _getKESelectionsForTab(tab) {
+  if (tab === 'events') return eventsKeyEvents;
+  if (tab === 'llm')    return llmSelectedKeyEvents;
+  if (tab === 'utm')    return utmSelectedKeyEvents;
+  if (tab === 'traffic') return trafficKeyEvents;
+  if (tab === 'audience') return audienceKeyEvents;
+  if (tab === 'pages') return pagesKeyEvents;
+  return [];
+}
+
+function toggleAllModalKEItems(checked) {
+  document.querySelectorAll('input[name="keModalItem"]').forEach(function(cb) { cb.checked = checked; });
+}
+
+function confirmKeyEventsModal() {
+  var selected = [...document.querySelectorAll('input[name="keModalItem"]:checked')].map(function(c){return c.value;});
+  var tab = currentKEModalTab;
+
+  if (tab === 'events')  eventsKeyEvents = selected;
+  else if (tab === 'llm') llmSelectedKeyEvents = selected;
+  else if (tab === 'utm') utmSelectedKeyEvents = selected;
+  else if (tab === 'traffic') trafficKeyEvents = selected;
+  else if (tab === 'audience') audienceKeyEvents = selected;
+  else if (tab === 'pages') pagesKeyEvents = selected;
+
+  _updateKEBadge(tab);
+  closeModal('keyEventsModal');
+}
+
+function _updateKEBadge(tab) {
+  var badgeId = {
+    traffic:'tr_keBadge', audience:'au_keBadge', pages:'pg_keBadge',
+    events:'ev_keBadge', llm:'llm_keBadge', utm:'utm_keBadge'
+  }[tab];
+  var selected = _getKESelectionsForTab(tab);
+  var el = document.getElementById(badgeId);
+  var isAllEvents = (document.getElementById('keModalType').value === 'all');
+  var label = isAllEvents ? 'event' : 'key event';
+  
+  if (!el) return;
+  if (selected.length) {
+    el.textContent = selected.length + ' ' + label + (selected.length!==1?'s':'') + ' selected';
+  } else {
+    el.textContent = '';
+  }
+}
+
+// handleEvType removed — select events button is always visible
+
+// =============================================
+// FETCH RUNNERS
+// =============================================
+function runFetch(tab) {
+  if (!selectedPropId) return alert('Select a GA4 property first.');
+  var pfxMap={traffic:'tr',audience:'au',pages:'pg',events:'ev',ecommerce:'ec',llm:'llm',utm:'utm'};
+  var prefix=pfxMap[tab];
+  var dr=resolveDateRange(prefix);
+  if (!dr) return alert('Select a valid date range.');
+
+  var isMoM = dr.months && dr.months.length > 0;
+  var params = { propertyId: selectedPropId };
+  if (isMoM) { params.months = dr.months; }
+  else        { params.dateRange = dr; }
+
+  if (tab==='traffic') {
+    params.metrics=[...activeMetrics.traffic];
+    params.dimensions=[...document.querySelectorAll('input[name="tr_dim"]:checked')].map(function(c){return c.value;});
+    params.dailyBreakdown=document.getElementById('tr_daily').checked;
+    params.channel=document.getElementById('tr_channel').value;
+    params.country=document.getElementById('tr_country').value.trim();
+    params.keyEvents=[...trafficKeyEvents];
+    params.sheetName=document.getElementById('tr_sheet').value.trim()||'GA4 Traffic';
+
+  } else if (tab==='audience') {
+    params.metrics=[...activeMetrics.audience];
+    params.dimension=document.getElementById('au_dimension').value;
+    params.dailyBreakdown=document.getElementById('au_daily').checked;
+    params.channel=document.getElementById('au_channel').value;
+    params.country=document.getElementById('au_country').value.trim();
+    params.keyEvents=[...audienceKeyEvents];
+    params.sheetName=document.getElementById('au_sheet').value.trim()||'GA4 Audience';
+
+  } else if (tab==='pages') {
+    params.metrics=[...activeMetrics.pages];
+    params.dimension=document.getElementById('pg_dimension').value;
+    params.dailyBreakdown=document.getElementById('pg_daily').checked;
+    params.pageFilter=[...pageFilterPages];
+    params.channel=document.getElementById('pg_channel').value;
+    params.country=document.getElementById('pg_country').value.trim();
+    params.keyEvents=[...pagesKeyEvents];
+    params.sheetName=document.getElementById('pg_sheet').value.trim()||'GA4 Pages';
+
+  } else if (tab==='events') {
+    var evType=document.getElementById('ev_type').value;
+    params.eventType=evType;
+    params.dailyBreakdown=document.getElementById('ev_daily').checked;
+    params.channel=document.getElementById('ev_channel').value;
+    params.country=document.getElementById('ev_country').value.trim();
+    params.eventNames=[...eventsKeyEvents];
+    if (evType==='key' && !params.eventNames.length) return alert('Select at least one key event.');
+    params.dimension=document.getElementById('ev_dim').value;
+    params.sheetName=document.getElementById('ev_sheet').value.trim()||'GA4 Events';
+
+  } else if (tab==='ecommerce') {
+    params.metrics=[...activeMetrics.ecommerce];
+    params.dimension=document.getElementById('ec_dim').value;
+    params.dailyBreakdown=document.getElementById('ec_daily').checked;
+    params.channel=document.getElementById('ec_channel').value;
+    params.country=document.getElementById('ec_country').value.trim();
+    params.sheetName=document.getElementById('ec_sheet').value.trim()||'GA4 Ecommerce';
+
+  } else if (tab==='utm') {
+    params.metrics=[...activeMetrics.utm];
+    params.dimensions=[...document.querySelectorAll('input[name="utm_dim"]:checked')].map(function(c){return c.value;});
+    if (!params.dimensions.length) return alert('Select at least one UTM parameter.');
+    params.dailyBreakdown=document.getElementById('utm_daily').checked;
+    params.keyEvents=[...utmSelectedKeyEvents];
+    params.campaignFilter=document.getElementById('utm_campaignFilter').value.trim();
+    params.sourceFilter=document.getElementById('utm_sourceFilter').value.trim();
+    params.mediumFilter=document.getElementById('utm_mediumFilter').value.trim();
+    params.sheetName=document.getElementById('utm_sheet').value.trim()||'GA4 UTM';
+  }
+
+  if (tab!=='events' && tab!=='llm' && (!params.metrics||!params.metrics.length)) return alert('Select at least one metric.');
+
+  // UI
+  var btn=document.getElementById(prefix+'_btn');
+  var prog=document.getElementById(prefix+'_prog');
+  var status=document.getElementById(prefix+'_status');
+  var progTxt=document.getElementById(prefix+'_progText');
+  btn.disabled=true; prog.style.display='block'; status.innerHTML='';
+
+  if (elapsedTimers[prefix]) clearInterval(elapsedTimers[prefix]);
+  var start=Date.now();
+  elapsedTimers[prefix]=setInterval(function(){
+    var s=Math.floor((Date.now()-start)/1000), m=Math.floor(s/60), sec=s%60;
+    progTxt.textContent=(isMoM?'Fetching MoM':'Fetching')+' — '+(m>0?m+'m ':'')+sec+'s elapsed';
+  },1000);
+
+  var fnName = isMoM
+    ? 'fetchGA4MoMData'
+    : { traffic:'fetchGA4TrafficData', audience:'fetchGA4AudienceData',
+        pages:'fetchGA4PagesData', events:'fetchGA4EventsData',
+        ecommerce:'fetchGA4EcommerceData', llm:'fetchGA4LLMData',
+        utm:'fetchGA4UTMData' }[tab];
+
+  if (isMoM) params.tab = tab;
+
+  _executeChunkedFetch_(fnName, params, prefix, isMoM);
+}
+
+function _executeChunkedFetch_(fnName, params, prefix, isMoM) {
+  var btn = document.getElementById(prefix+'_btn');
+  var prog = document.getElementById(prefix+'_prog');
+  var status = document.getElementById(prefix+'_status');
+  var progTxt = document.getElementById(prefix+'_progText');
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (res && res.status === 'partial') {
+        // We hit the time limit, continue fetching
+        if (res.nextOffset) params.offset = res.nextOffset;
+        if (res.momState) params.momState = res.momState;
+        
+        var m = res.message || 'Fetching next chunk...';
+        progTxt.textContent = m + ' (Continuing...)';
+        
+        // Immediately loop
+        _executeChunkedFetch_(fnName, params, prefix, isMoM);
+      } else {
+        // Complete
+        clearInterval(elapsedTimers[prefix]); 
+        btn.disabled = false; 
+        prog.style.display = 'none';
+        var msg = (res && res.message) ? res.message : String(res);
+        status.innerHTML = '<p style="color:green;margin:0;">' + msg.replace(/\n/g,'<br>') + '</p>';
+      }
+    })
+    .withFailureHandler(function(e) {
+      clearInterval(elapsedTimers[prefix]); 
+      btn.disabled = false; 
+      prog.style.display = 'none';
+      status.innerHTML = '<p style="color:red;margin:0;">' + (e.message || e) + '</p>';
+    })
+    [fnName](params);
+}
+
+// =============================================
+// LLM TAB
+// =============================================
+function updateLLMSheetPreview() {
+  var name = document.getElementById('llm_sheet').value.trim() || 'GA4 LLM Traffic';
+  var sp = document.getElementById('llm_sessSheetPreview');
+  var ep = document.getElementById('llm_evSheetPreview');
+  if (sp) sp.textContent = name;
+  if (ep) ep.textContent = name + ' - Events';
+}
+
+function handleLLMFetchType() {
+  var val = document.getElementById('llm_fetchType').value;
+  document.getElementById('llm_keSection').style.display = val==='sessions' ? 'none' : '';
+}
+
+function toggleAllLLMSrc() {
+  var boxes=document.querySelectorAll('.llm-src');
+  var any=[...boxes].some(function(b){return b.checked;});
+  boxes.forEach(function(b){b.checked=!any;});
+}
+
+// loadLLMKeyEvents and toggleAllLLMKE removed — now handled by shared KE modal
+
+function runLLMFetch() {
+  if (!selectedPropId) return alert('Select a GA4 property first.');
+  var dr=resolveDateRange('llm');
+  if (!dr) return alert('Select a valid date range.');
+
+  var sources=[...document.querySelectorAll('.llm-src:checked')].map(function(c){return c.value;});
+  var customSrc=document.getElementById('llm_customSrc').value.trim();
+  if (customSrc) customSrc.split(',').map(function(s){return s.trim();}).filter(Boolean).forEach(function(s){sources.push(s);});
+  if (!sources.length) return alert('Select at least one LLM source.');
+
+  var fetchType=document.getElementById('llm_fetchType').value;
+  var keyEvents=[];
+  if (fetchType!=='sessions') {
+    keyEvents=[...llmSelectedKeyEvents];
+    if (!keyEvents.length && fetchType==='events') return alert('Select at least one key event (use + Select).');
+  }
+
+  var isMoM = dr.months && dr.months.length > 0;
+  var params = {
+    propertyId:         selectedPropId,
+    tab:                'llm',
+    sources:            sources,
+    fetchType:          fetchType,
+    keyEvents:          keyEvents,
+    dailyBreakdown:     document.getElementById('llm_daily').checked,
+    includeLandingPage: document.getElementById('llm_landing').checked,
+    sheetName:          document.getElementById('llm_sheet').value.trim()||'GA4 LLM Traffic'
+  };
+  if (isMoM) { params.months = dr.months; }
+  else        { params.dateRange = dr; }
+
+  var btn=document.getElementById('llm_btn');
+  var prog=document.getElementById('llm_prog');
+  var status=document.getElementById('llm_status');
+  var progTxt=document.getElementById('llm_progText');
+  btn.disabled=true; prog.style.display='block'; status.innerHTML='';
+
+  if (elapsedTimers['llm']) clearInterval(elapsedTimers['llm']);
+  var start=Date.now();
+  elapsedTimers['llm']=setInterval(function(){
+    var s=Math.floor((Date.now()-start)/1000), m=Math.floor(s/60), sec=s%60;
+    progTxt.textContent=(isMoM?'Fetching MoM — ':'Fetching — ')+(m>0?m+'m ':'')+sec+'s elapsed';
+  },1000);
+
+  var fnName = isMoM ? 'fetchGA4MoMData' : 'fetchGA4LLMData';
+
+  _executeChunkedFetch_(fnName, params, 'llm', isMoM);
+}
+
+// =============================================
+// MODAL HELPERS
+// =============================================
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+function handleOverlayClick(e,id){ if(e.target===document.getElementById(id)) closeModal(id); }
+
+// =============================================
+// UTIL
+// =============================================
+function esc(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+</script>
+</body>
+</html>

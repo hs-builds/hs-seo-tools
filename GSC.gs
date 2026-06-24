@@ -1,10 +1,51 @@
 // HS SEO Tool — GSC Module
 
 const DATA_START_ROW = 2;
+const GSC_CACHE_DURATION = 600;
+const VOLATILE_THRESHOLD = 5;
+
+/* ─── UNIFIED STOP / PROGRESS / SETTINGS ─── */
+
+function stopAnyUpdate() {
+  CacheService.getDocumentCache().put("GSC_STOP", "1", 600);
+}
+
+function setProgress(status, done, total, label, extras) {
+  const cache = CacheService.getDocumentCache();
+  const payload = { status, done, total, label, ts: Date.now() };
+  if (extras) Object.keys(extras).forEach(k => { payload[k] = extras[k]; });
+  cache.put("gscProgress", JSON.stringify(payload), 600);
+}
+
+function getProgress() {
+  const raw = CacheService.getDocumentCache().get("gscProgress");
+  if (!raw) return null;
+  try {
+    const obj = JSON.parse(raw);
+    obj.elapsedMs = Date.now() - (obj.ts || Date.now());
+    return obj;
+  } catch(e) { return null; }
+}
+
+function saveUserSetting(key, value) {
+  try {
+    PropertiesService.getUserProperties().setProperty("HSSEO_" + key, JSON.stringify(value));
+  } catch(e) {}
+}
+
+function getUserSetting(key) {
+  try {
+    const raw = PropertiesService.getUserProperties().getProperty("HSSEO_" + key);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+
+/* ─── KW TRACKER STOP (now uses unified GSC_STOP) ─── */
 
 function stopKwUpdate() {
   const cache = CacheService.getDocumentCache();
-  cache.put("KW_STOP", "1", 600);
+  cache.put("GSC_STOP", "1", 600);
   const prev = getKwProgress() || {};
   setKwProgress("stopped", prev.done || 0, prev.total || 0, {
     volatileCount: prev.volatileCount || 0,
@@ -104,10 +145,6 @@ function getGscSites() {
   return sites;
 }
 
-function include(filename) {
-  return HtmlService.createHtmlOutputFromFile(filename).getContent();
-}
-
 function setKwProgress(status, done, total, extras) {
   const cache = CacheService.getDocumentCache();
   let startTs = cache.get("KW_START_TS");
@@ -178,7 +215,7 @@ function fetchGscKeywordRanksForMonth_(siteUrl, keywords, startDate, endDate, co
   const kwMap = {};
   keywords.forEach(kw => { kwMap[kw.toLowerCase()] = kw; });
 
-  const payload = { startDate, endDate, dimensions: ["query", "page"], searchType: "web", rowLimit: 25000 };
+  const payload = { startDate, endDate, dimensions: ["query", "page"], searchType: "web", rowLimit: 25000, dataState: "all" };
   if (country && country.trim()) {
     payload.dimensionFilterGroups = [{ filters: [{ dimension: "country", operator: "equals", expression: country.trim().toUpperCase() }] }];
   }
@@ -209,13 +246,12 @@ function fetchGscKeywordRanksForMonth_(siteUrl, keywords, startDate, endDate, co
     const totalImp = pages.reduce((s, p) => s + p.impressions, 0);
     const threshold = Math.max(totalImp * 0.20, 2);
     let significant = pages.filter(p => p.impressions >= threshold);
-    if (!significant.length) {
-      const top = pages.reduce((b, p) => p.impressions > b.impressions ? p : b, pages[0]);
-      significant = [top];
-    }
-    let best = significant.find(p => p.position > 0) || null;
-    significant.forEach(p => { if (p.position > 0 && (!best || p.position < best.position)) best = p; });
-    if (!best) best = significant[0];
+    if (!significant.length) significant = [pages.reduce((b, p) => p.impressions > b.impressions ? p : b, pages[0])];
+    const best = significant.reduce((b, p) => {
+      if (p.position <= 0) return b;
+      if (!b || p.position < b.position) return p;
+      return b;
+    }, null) || significant[0];
     if (best) results[kw] = { position: best.position, clicks: best.clicks, impressions: best.impressions, ctr: best.ctr };
   });
   return results;
@@ -226,7 +262,7 @@ function fetchGscKeywordRanksForMonthWithPages_(siteUrl, keywords, startDate, en
   const kwMap = {};
   keywords.forEach(kw => { kwMap[kw.toLowerCase()] = kw; });
 
-  const payload = { startDate, endDate, dimensions, searchType: "web", rowLimit: 25000 };
+  const payload = { startDate, endDate, dimensions, searchType: "web", rowLimit: 25000, dataState: "all" };
   if (country && country.trim()) {
     payload.dimensionFilterGroups = [{ filters: [{ dimension: "country", operator: "equals", expression: country.trim().toUpperCase() }] }];
   }
@@ -258,7 +294,11 @@ function fetchGscKeywordRanksForMonthWithPages_(siteUrl, keywords, startDate, en
     const threshold = Math.max(totalImp * 0.20, 2);
     let significant = pages.filter(p => p.impressions >= threshold);
     if (!significant.length) significant = [pages.reduce((b, p) => p.impressions > b.impressions ? p : b, pages[0])];
-    let best = significant.reduce((b, p) => { if (p.position <= 0) return b; if (!b || p.position < b.position) return p; return b; }, null) || significant[0];
+    const best = significant.reduce((b, p) => {
+      if (p.position <= 0) return b;
+      if (!b || p.position < b.position) return p;
+      return b;
+    }, null) || significant[0];
     results[kw] = {
       position: best ? best.position : 0, clicks: best ? best.clicks : 0,
       impressions: best ? best.impressions : 0, ctr: best ? best.ctr || 0 : 0,
@@ -360,7 +400,7 @@ function fetchGscKeywordRanksFromUI(formData) {
   if (!keywords.length) throw new Error("No keywords found in Column A.");
 
   const cache = CacheService.getDocumentCache();
-  cache.remove("KW_STOP");
+  cache.remove("GSC_STOP");
 
   const CHECKPOINT_KEY     = "KW_CHECKPOINT_" + siteUrl.replace(/[^a-zA-Z0-9]/g, "_").slice(0, 50);
   const existingCheckpoint = cache.get(CHECKPOINT_KEY);
@@ -368,6 +408,7 @@ function fetchGscKeywordRanksFromUI(formData) {
   const isResume           = completedMonths.length > 0;
   if (!isResume) cache.remove(CHECKPOINT_KEY);
 
+  let cannibalEntries = [];
   if (cannibalReport) { ensureCannibalizationReportSheet_(); clearCannibalizationReport_(); }
 
   setKwProgress("running", 0, monthRanges.length, { volatileCount: 0, cannibalCount: 0 });
@@ -375,13 +416,13 @@ function fetchGscKeywordRanksFromUI(formData) {
   let volatileCount = 0, cannibalCount = 0, latestMonthRankData = null;
 
   for (let monthIdx = 0; monthIdx < monthRanges.length; monthIdx++) {
-    if (cache.get("KW_STOP") === "1") {
+    if (cache.get("GSC_STOP") === "1") {
       setKwProgress("stopped", monthIdx, monthRanges.length, { volatileCount, cannibalCount: 0 });
       return "Update stopped by user at month " + (monthIdx + 1) + " of " + monthRanges.length;
     }
 
     const isLatestMonth = (monthIdx === monthRanges.length - 1);
-    if (isResume && !isLatestMonth && completedMonths.indexOf(monthIdx) !== -1) {
+    if (isResume && !isLatestMonth && completedMonths.indexOf(monthRanges[monthIdx].headerName) !== -1) {
       setKwProgress("running", monthIdx + 1, monthRanges.length, { volatileCount, cannibalCount });
       continue;
     }
@@ -404,13 +445,13 @@ function fetchGscKeywordRanksFromUI(formData) {
       colData.push([position]);
 
       if (cannibalReport && isLatestMonth && data && data.pageDetails && data.pageDetails.length > 1) {
-        appendCannibalizationReport_(kw, data.pageDetails);
+        cannibalEntries.push({ keyword: kw, pageDetails: data.pageDetails });
         cannibalCount++;
       }
 
       if (position > 0) {
         const prevRank = findPrevRankInRow_(allData[kwIdx], monthIdx, monthRanges);
-        if (prevRank && prevRank.rank > 0 && Math.abs(position - prevRank.rank) > 5) {
+        if (prevRank && prevRank.rank > 0 && Math.abs(position - prevRank.rank) > VOLATILE_THRESHOLD) {
           volatileCells.push({ row: rowNumbers[kwIdx], col: m.col, prevRank: prevRank.rank, newRank: position });
           volatileCount++;
         }
@@ -429,7 +470,7 @@ function fetchGscKeywordRanksFromUI(formData) {
     }
 
     setKwProgress("running", monthIdx + 1, monthRanges.length, { volatileCount, cannibalCount });
-    completedMonths.push(monthIdx);
+    completedMonths.push(monthRanges[monthIdx].headerName);
     try { cache.put(CHECKPOINT_KEY, JSON.stringify(completedMonths), 21600); } catch(e) {}
   }
 
@@ -453,7 +494,12 @@ function fetchGscKeywordRanksFromUI(formData) {
   if (monthRanges.length >= 2) {
     const latestM  = monthRanges[monthRanges.length - 1];
     const prevM    = monthRanges[monthRanges.length - 2];
-    const deltaCol = latestM.col + 1;
+    let deltaCol = latestM.col + 1;
+
+    if (sheet.getRange(1, deltaCol).getValue() !== "") {
+      sheet.insertColumnAfter(latestM.col);
+      deltaCol = latestM.col + 1;
+    }
 
     sheet.getRange(1, deltaCol).setValue("Δ vs " + prevM.headerName).setFontWeight("bold").setHorizontalAlignment("center").setBackground("#f1f3f4");
     sheet.setColumnWidth(deltaCol, 80);
@@ -500,7 +546,7 @@ function fetchGscKeywordRanksFromUI(formData) {
     sheet.getRange(sRow, monthRanges[monthRanges.length - 1].col + 1).setValue("").setBackground("#e8eaed");
   }
 
-  if (cannibalReport) formatCannibalizationReport_();
+  if (cannibalReport) writeCannibalizationReport_(cannibalEntries);
 
   setKwProgress("done", monthRanges.length, monthRanges.length, { volatileCount, cannibalCount });
   cache.remove(CHECKPOINT_KEY);
@@ -522,7 +568,7 @@ function fetchPagesForKeywordsToColumnB_(sheet, siteUrl, keywords, rowNumbers, s
   const kwMap = {};
   keywords.forEach(kw => { kwMap[kw.toLowerCase()] = kw; });
 
-  const payload = { startDate, endDate, dimensions: ["query", "page"], searchType: "web", rowLimit: 25000 };
+  const payload = { startDate, endDate, dimensions: ["query", "page"], searchType: "web", rowLimit: 25000, dataState: "all" };
   if (country && country.trim()) {
     payload.dimensionFilterGroups = [{ filters: [{ dimension: "country", operator: "equals", expression: country.trim().toUpperCase() }] }];
   }
@@ -554,9 +600,11 @@ function fetchPagesForKeywordsToColumnB_(sheet, siteUrl, keywords, rowNumbers, s
     const threshold = Math.max(totalImp * 0.20, 2);
     let significant = pages.filter(p => p.impressions >= threshold);
     if (!significant.length) significant = [pages.reduce((b, p) => p.impressions > b.impressions ? p : b, pages[0])];
-    let best = null;
-    significant.forEach(p => { if (p.position > 0 && (!best || p.position < best.position)) best = p; });
-    if (!best) best = significant[0];
+    const best = significant.reduce((b, p) => {
+      if (p.position <= 0) return b;
+      if (!b || p.position < b.position) return p;
+      return b;
+    }, null) || significant[0];
     if (best && best.page) sheet.getRange(rowNumbers[idx], 2).setValue(best.page);
   });
 }
@@ -585,73 +633,93 @@ function clearCannibalizationReport_() {
   if (!sh) return;
   const last = sh.getLastRow();
   if (last > 1) {
-    // Break any merges before clearing
     try { sh.getRange(2, 1, last - 1, 5).breakApart(); } catch(e) {}
     sh.getRange(2, 1, last - 1, 5).clearContent().setBackground(null).setFontColor(null).setFontWeight("normal");
   }
 }
 
-function appendCannibalizationReport_(keyword, pageDetails) {
-  if (!pageDetails || !pageDetails.length) return;
+function writeCannibalizationReport_(entries) {
   const sh = SpreadsheetApp.getActive().getSheetByName("Cannibalization Report");
-  if (!sh) return;
+  if (!sh || !entries.length) return;
 
-  const winner = pageDetails.reduce((best, p) => {
-    if (!best) return p;
-    if (p.position > 0 && (best.position === 0 || p.position < best.position)) return p;
-    if (p.position === best.position && p.impressions > best.impressions) return p;
-    return best;
-  }, null);
+  const values = [];
+  const bgColors = [];
+  const fontColors = [];
+  const fontWeights = [];
+  const mergeSpecs = [];
+  let row = 2;
 
-  const n        = pageDetails.length;
-  const startRow = sh.getLastRow() + 1;
+  entries.forEach(entry => {
+    const pages = entry.pageDetails;
+    const winner = pages.reduce((best, p) => {
+      if (!best) return p;
+      if (p.position > 0 && (best.position === 0 || p.position < best.position)) return p;
+      if (p.position === best.position && p.impressions > best.impressions) return p;
+      return best;
+    }, null);
 
-  // Col A: keyword in first row only; cols B-E: page data
-  sh.getRange(startRow, 1, n, 1).setValues(pageDetails.map((_, i) => [i === 0 ? keyword : ""]));
-  sh.getRange(startRow, 2, n, 4).setValues(pageDetails.map(p => [p.page || "", p.clicks || 0, p.impressions || 0, p.position || 0]));
+    const n = pages.length;
+    mergeSpecs.push({ row: row, numRows: n });
 
-  // Merge keyword cell vertically across all page rows
-  if (n > 1) sh.getRange(startRow, 1, n, 1).merge();
+    pages.forEach((p, idx) => {
+      const isWinner = winner && p.page === winner.page;
+      const bg = isWinner ? "#d9ead3" : "#fce8e6";
+      const fc = isWinner ? "#274e13" : "#7f0000";
+      const fw = isWinner ? "bold" : "normal";
 
-  // Keyword cell — no fill, black text, centered + middle + wrap + bold
-  sh.getRange(startRow, 1, n, 1)
-    .setBackground(null).setFontColor("#000000")
-    .setFontWeight("bold").setHorizontalAlignment("center")
-    .setVerticalAlignment("middle").setWrap(true);
+      values.push([
+        idx === 0 ? entry.keyword : "",
+        p.page || "",
+        p.clicks || 0,
+        p.impressions || 0,
+        p.position || 0
+      ]);
 
-  // URL + metric cells — colour by winner/loser
-  const bgGrid = [], fontGrid = [], weightGrid = [];
-  pageDetails.forEach(p => {
-    const isWinner = winner && p.page === winner.page;
-    const bg = isWinner ? "#d9ead3" : "#fce8e6";
-    const fc = isWinner ? "#274e13" : "#7f0000";
-    const fw = isWinner ? "bold"    : "normal";
-    bgGrid.push([bg, bg, bg, bg]);
-    fontGrid.push([fc, fc, fc, fc]);
-    weightGrid.push([fw, fw, fw, fw]);
+      bgColors.push([null, bg, bg, bg, bg]);
+      fontColors.push(["#000000", fc, fc, fc, fc]);
+      fontWeights.push(["bold", fw, fw, fw, fw]);
+    });
+
+    // blank separator
+    values.push(["", "", "", "", ""]);
+    bgColors.push([null, null, null, null, null]);
+    fontColors.push([null, null, null, null, null]);
+    fontWeights.push(["normal", "normal", "normal", "normal", "normal"]);
+    row += n + 1;
   });
-  sh.getRange(startRow, 2, n, 4).setBackgrounds(bgGrid).setFontColors(fontGrid).setFontWeights(weightGrid);
-  sh.getRange(startRow, 2, n, 1).setHorizontalAlignment("left").setVerticalAlignment("middle");
-  sh.getRange(startRow, 3, n, 3).setHorizontalAlignment("center").setVerticalAlignment("middle");
 
-  // Border around entire keyword group (A-E), inner horizontal lines on B-E between rows
-  sh.getRange(startRow, 1, n, 5).setBorder(true, true, true, true, false, false, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
-  if (n > 1) {
-    sh.getRange(startRow, 2, n, 4).setBorder(null, null, null, null, false, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
+  if (values.length && values[values.length - 1].every(c => c === "")) {
+    values.pop();
+    bgColors.pop();
+    fontColors.pop();
+    fontWeights.pop();
   }
 
-  // Insert a blank row after the group so getLastRow() tracks it for the next keyword
-  sh.insertRowAfter(startRow + n - 1);
-}
+  const numRows = values.length;
+  if (numRows === 0) return;
 
+  const range = sh.getRange(2, 1, numRows, 5);
+  range.setValues(values);
+  range.setBackgrounds(bgColors);
+  range.setFontColors(fontColors);
+  range.setFontWeights(fontWeights);
+  range.setHorizontalAlignment("left");
+  sh.getRange(2, 1, numRows, 1).setHorizontalAlignment("center").setVerticalAlignment("middle").setWrap(true);
+  sh.getRange(2, 2, numRows, 1).setHorizontalAlignment("left").setVerticalAlignment("middle");
+  sh.getRange(2, 3, numRows, 3).setHorizontalAlignment("center").setVerticalAlignment("middle");
 
-function formatCannibalizationReport_() {
-  const sh = SpreadsheetApp.getActive().getSheetByName("Cannibalization Report");
-  if (!sh) return;
-  if (sh.getLastRow() < 2) return;
+  mergeSpecs.forEach(spec => {
+    if (spec.numRows > 1) {
+      sh.getRange(spec.row, 1, spec.numRows, 1).merge();
+    }
+  });
 
-  // Column widths (already set per-append but enforce here too)
-  [250, 750, 100, 100, 100].forEach((w, i) => sh.setColumnWidth(i + 1, w));
+  mergeSpecs.forEach(spec => {
+    sh.getRange(spec.row, 1, spec.numRows, 5).setBorder(true, true, true, true, false, false, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
+    if (spec.numRows > 1) {
+      sh.getRange(spec.row, 2, spec.numRows, 4).setBorder(null, null, null, null, false, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
+    }
+  });
 }
 
 function runAdvancedFetchFromUI(formData) {
@@ -665,7 +733,6 @@ function runAdvancedFetchFromUI(formData) {
   if (!siteUrl)            throw new Error("Select a GSC property.");
   if (months.length === 0) throw new Error("Select at least one month.");
 
-  // Build a post-fetch row filter function from operator+value conditions
   const hasRowFilters = Object.keys(rowFilters).length > 0;
   const applyOp_ = (actual, op, val) => {
     switch(op) {
@@ -723,6 +790,9 @@ function runAdvancedFetchFromUI(formData) {
 
   let totalRowsWritten = 0;
   const isSingleRange = resolvedDateRanges.length === 1;
+  const cache = CacheService.getDocumentCache();
+  cache.remove("GSC_STOP");
+  setProgress("running", 0, 1, "Fetching data");
 
   if (isSingleRange) {
     const dr     = resolvedDateRanges[0];
@@ -732,6 +802,12 @@ function runAdvancedFetchFromUI(formData) {
 
     let startRow = 0, writeRow = FETCH_DATA_START_ROW, pageNum = 0;
     while (true) {
+      if (cache.get("GSC_STOP") === "1") {
+        cache.remove("GSC_STOP");
+        setProgress("stopped", pageNum, pageNum + 1, "Stopped");
+        throw new Error("Stopped by user.");
+      }
+
       let rows = [];
       try {
         const res = UrlFetchApp.fetch(apiUrl, { method: "post", contentType: "application/json", payload: JSON.stringify({ ...payload, startRow }), headers: { Authorization: "Bearer " + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
@@ -750,17 +826,25 @@ function runAdvancedFetchFromUI(formData) {
         writeRow += outBatch.length; totalRowsWritten += outBatch.length;
       }
       startRow += rows.length; pageNum++;
+      setProgress("running", pageNum, pageNum + 1, "Fetching data");
       if (pageNum % 5 === 0) SpreadsheetApp.flush();
       if (rows.length < payload.rowLimit) break;
     }
   } else {
     const allDataMap = {};
-    resolvedDateRanges.forEach(dr => {
+    resolvedDateRanges.forEach((dr, idx) => {
+      if (cache.get("GSC_STOP") === "1") {
+        cache.remove("GSC_STOP");
+        setProgress("stopped", idx, resolvedDateRanges.length, "Stopped");
+        throw new Error("Stopped by user.");
+      }
+
       fetchGscDataForMonth_(siteUrl, dr.startDate, dr.endDate, searchType, dimensions, filters).forEach(row => {
         const dimKey = (row.keys || []).join("|||");
         if (!allDataMap[dimKey]) allDataMap[dimKey] = { keys: row.keys || [], months: {} };
         allDataMap[dimKey].months[dr.label] = { clicks: row.clicks || 0, impressions: row.impressions || 0, ctr: row.ctr || 0, position: row.position || 0 };
       });
+      setProgress("running", idx + 1, resolvedDateRanges.length, "Fetching data");
     });
 
     const outRows = [];
@@ -804,6 +888,7 @@ function runAdvancedFetchFromUI(formData) {
   }
 
   try { ss.setActiveSheet(prevSheet); } catch(e) {}
+  setProgress("done", 1, 1, "Done");
 
   let msg = "✅ GSC Data updated!\nDate range: " + resolvedMonthLabels.join(", ") + "\nTotal rows: " + totalRowsWritten + "\nDimensions: " + dimensions.join(", ");
   if (hasRowFilters) {
@@ -822,6 +907,13 @@ function fetchGscDataForMonth_(siteUrl, startDate, endDate, searchType, dimensio
   const payload = { startDate, endDate, dimensions, searchType, rowLimit: 25000, dataState: "all" };
   if (filters && filters.length > 0) payload.dimensionFilterGroups = [{ filters }];
 
+  const cacheKey = "GSC_DM_" + [siteUrl, startDate, endDate, searchType, dimensions.join(","), JSON.stringify(filters || [])].join("|").replace(/[^a-zA-Z0-9]/g, "_").slice(0, 200);
+  const cache = CacheService.getDocumentCache();
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    try { return JSON.parse(cached); } catch(e) {}
+  }
+
   const allRows = [];
   let startRow = 0, hasMore = true;
   while (hasMore) {
@@ -835,6 +927,8 @@ function fetchGscDataForMonth_(siteUrl, startDate, endDate, searchType, dimensio
       if (rows.length < payload.rowLimit) hasMore = false;
     } catch(e) { hasMore = false; }
   }
+
+  cache.put(cacheKey, JSON.stringify(allRows), GSC_CACHE_DURATION);
   return allRows;
 }
 
@@ -846,7 +940,7 @@ function fetchGscPageMetricsMap_(siteUrl, startDate, endDate, searchType, countr
   if (!targetUrls || !targetUrls.length) return map;
 
   const token = ScriptApp.getOAuthToken();
-  const BATCH = 10, SLEEP_MS = 500, total = targetUrls.length;
+  const BATCH = 100, total = targetUrls.length;
 
   for (let b = 0; b < total; b += BATCH) {
     const batchUrls = targetUrls.slice(b, Math.min(b + BATCH, total));
@@ -874,8 +968,6 @@ function fetchGscPageMetricsMap_(siteUrl, startDate, endDate, searchType, countr
         }
       } catch(e) {}
     });
-
-    if (b + BATCH < total) Utilities.sleep(SLEEP_MS);
   }
 
   return map;
@@ -889,7 +981,7 @@ function fetchGscUniqueQueriesCountMap_(siteUrl, startDate, endDate, searchType,
   if (!targetUrls || !targetUrls.length) return out;
 
   const token = ScriptApp.getOAuthToken();
-  const BATCH = 10, SLEEP_MS = 500, total = targetUrls.length;
+  const BATCH = 100, total = targetUrls.length;
 
   for (let b = 0; b < total; b += BATCH) {
     const batchUrls = targetUrls.slice(b, Math.min(b + BATCH, total));
@@ -916,8 +1008,6 @@ function fetchGscUniqueQueriesCountMap_(siteUrl, startDate, endDate, searchType,
         out[pageUrl] = rows.length; out[norm(pageUrl)] = rows.length;
       } catch(e) { out[pageUrl] = 0; out[norm(pageUrl)] = 0; }
     });
-
-    if (b + BATCH < total) Utilities.sleep(SLEEP_MS);
   }
 
   return out;
@@ -1014,7 +1104,7 @@ function fetchGscUrlMetricsFromUI(formData) {
     inspectionMetrics.forEach((m, i) => {
       const col = baseTimeCols + 1 + i;
       sheet.getRange(2, col, 1, 1)
-        .setValue(m.label).setFontFamily("Arial").setFontWeight("bold")
+        .setValue(m.label).setFontFamily("Sora").setFontWeight("bold")
         .setHorizontalAlignment("center").setVerticalAlignment("middle")
         .setBackground("#F1F3F4").setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
       sheet.getRange(1, col, 1, 1).setBackground("#F1F3F4");
@@ -1030,11 +1120,21 @@ function fetchGscUrlMetricsFromUI(formData) {
   const urls      = urlValues.map(r => (r[0] || "").toString().trim()).filter(Boolean);
   if (!urls.length) throw new Error("No URLs found in 'URL Tracker'. Add URLs in Column A (starting Row 3).");
 
+  const cache = CacheService.getDocumentCache();
+  cache.remove("GSC_STOP");
+  setProgress("running", 0, resolvedDateRanges.length, "Fetching URL metrics");
+
   const monthDataMap = {};
-  resolvedDateRanges.forEach(dr => {
+  resolvedDateRanges.forEach((dr, idx) => {
+    if (cache.get("GSC_STOP") === "1") {
+      cache.remove("GSC_STOP");
+      setProgress("stopped", idx, resolvedDateRanges.length, "Stopped");
+      throw new Error("Stopped by user.");
+    }
     const pageMap      = needsPageMetrics ? fetchGscPageMetricsMap_(siteUrl, dr.startDate, dr.endDate, searchType, country, urls) : {};
     const queryCountMap = needsQueries ? fetchGscUniqueQueriesCountMap_(siteUrl, dr.startDate, dr.endDate, searchType, country, urls) : {};
     monthDataMap[dr.label] = { pageMap, queryCountMap };
+    setProgress("running", idx + 1, resolvedDateRanges.length, "Fetching URL metrics");
   });
 
   const inspectionMap = {};
@@ -1042,26 +1142,39 @@ function fetchGscUrlMetricsFromUI(formData) {
     const endpoint = "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect";
     const token    = ScriptApp.getOAuthToken();
     const tz       = Session.getScriptTimeZone();
-    const requests = urls.map(pageUrl => ({
-      url: endpoint, method: "post", contentType: "application/json",
-      payload: JSON.stringify({ inspectionUrl: pageUrl, siteUrl }),
-      headers: { Authorization: "Bearer " + token }, muteHttpExceptions: true
-    }));
-    UrlFetchApp.fetchAll(requests).forEach((res, i) => {
-      const pageUrl = urls[i];
-      try {
-        if (res.getResponseCode() !== 200) { inspectionMap[pageUrl] = { last_crawl: "API Error", is_indexed: "API Error" }; return; }
-        const result    = (JSON.parse(res.getContentText()).inspectionResult || {}).indexStatusResult || {};
-        const rawCrawl  = result.lastCrawlTime || "";
-        let   last_crawl = "Not crawled";
-        if (rawCrawl) { const d = new Date(rawCrawl); if (!isNaN(d.getTime())) last_crawl = Utilities.formatDate(d, tz, "dd MMM yyyy"); }
-        const verdict = result.verdict || "", coverageState = result.coverageState || "";
-        const is_indexed = verdict === "PASS" ? "Yes"
-          : (verdict === "FAIL" || verdict === "EXCLUDED" || verdict === "NEUTRAL") ? "No (" + (coverageState || verdict) + ")"
-          : (coverageState || "Unknown");
-        inspectionMap[pageUrl] = { last_crawl, is_indexed };
-      } catch(e) { inspectionMap[pageUrl] = { last_crawl: "Error", is_indexed: "Error" }; }
-    });
+    const BATCH    = 100;
+
+    for (let b = 0; b < urls.length; b += BATCH) {
+      const batchUrls = urls.slice(b, Math.min(b + BATCH, urls.length));
+      const requests = batchUrls.map(pageUrl => ({
+        url: endpoint, method: "post", contentType: "application/json",
+        payload: JSON.stringify({ inspectionUrl: pageUrl, siteUrl }),
+        headers: { Authorization: "Bearer " + token }, muteHttpExceptions: true
+      }));
+
+      let responses;
+      try { responses = UrlFetchApp.fetchAll(requests); }
+      catch(e) {
+        batchUrls.forEach(u => { inspectionMap[u] = { last_crawl: "Error", is_indexed: "Error" }; });
+        continue;
+      }
+
+      responses.forEach((res, i) => {
+        const pageUrl = batchUrls[i];
+        try {
+          if (res.getResponseCode() !== 200) { inspectionMap[pageUrl] = { last_crawl: "API Error", is_indexed: "API Error" }; return; }
+          const result    = (JSON.parse(res.getContentText()).inspectionResult || {}).indexStatusResult || {};
+          const rawCrawl  = result.lastCrawlTime || "";
+          let   last_crawl = "Not crawled";
+          if (rawCrawl) { const d = new Date(rawCrawl); if (!isNaN(d.getTime())) last_crawl = Utilities.formatDate(d, tz, "dd MMM yyyy"); }
+          const verdict = result.verdict || "", coverageState = result.coverageState || "";
+          const is_indexed = verdict === "PASS" ? "Yes"
+            : (verdict === "FAIL" || verdict === "EXCLUDED" || verdict === "NEUTRAL") ? "No (" + (coverageState || verdict) + ")"
+            : (coverageState || "Unknown");
+          inspectionMap[pageUrl] = { last_crawl, is_indexed };
+        } catch(e) { inspectionMap[pageUrl] = { last_crawl: "Error", is_indexed: "Error" }; }
+      });
+    }
   }
 
   const norm = u => (u || "").toString().trim().replace(/\/+$/, "");
@@ -1093,20 +1206,20 @@ function fetchGscUrlMetricsFromUI(formData) {
     sheet.getRange(URL_DATA_START_ROW, 1, out.length, totalCols).setValues(out);
 
     sheet.getRange(URL_DATA_START_ROW, 1, out.length, 1)
-      .setFontColor("#0000FF").setFontFamily("Arial").setWrap(true)
+      .setFontColor("#0000FF").setFontFamily("Sora").setWrap(true)
       .setNumberFormat("General").setHorizontalAlignment("left");
 
     let col = 2;
     resolvedMonthLabels.forEach(() => {
       timeMetrics.forEach(m => {
-        sheet.getRange(URL_DATA_START_ROW, col, out.length, 1).setFontFamily("Arial").setHorizontalAlignment("center").setNumberFormat(m.format);
+        sheet.getRange(URL_DATA_START_ROW, col, out.length, 1).setFontFamily("Sora").setHorizontalAlignment("center").setNumberFormat(m.format);
         col++;
       });
     });
 
     if (inspectionMetrics.length > 0) {
       sheet.getRange(URL_DATA_START_ROW, baseTimeCols + 1, out.length, inspectionMetrics.length)
-        .setFontFamily("Arial").setHorizontalAlignment("center").setNumberFormat("@");
+        .setFontFamily("Sora").setHorizontalAlignment("center").setNumberFormat("@");
     }
 
     if (resolvedMonthLabels.length >= 2 && timeMetrics.length > 0) {
@@ -1114,7 +1227,7 @@ function fetchGscUrlMetricsFromUI(formData) {
       timeMetrics.forEach((metric, mIdx) => {
         const momCol = momStartCol + mIdx;
         sheet.getRange(2, momCol, 1, 1)
-          .setValue("Δ% " + metric.label).setFontFamily("Arial").setFontWeight("bold")
+          .setValue("Δ% " + metric.label).setFontFamily("Sora").setFontWeight("bold")
           .setHorizontalAlignment("center").setVerticalAlignment("middle")
           .setBackground("#E8EAED").setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
         sheet.getRange(1, momCol, 1, 1).setBackground("#E8EAED");
@@ -1140,11 +1253,12 @@ function fetchGscUrlMetricsFromUI(formData) {
           }
         }
         const mr = sheet.getRange(URL_DATA_START_ROW, momCol, out.length, 1);
-        mr.setValues(pv).setBackgrounds(pb).setFontColors(pf).setFontFamily("Arial").setHorizontalAlignment("center").setNumberFormat("@");
+        mr.setValues(pv).setBackgrounds(pb).setFontColors(pf).setFontFamily("Sora").setHorizontalAlignment("center").setNumberFormat("@");
       });
     }
   }
 
+  setProgress("done", resolvedDateRanges.length, resolvedDateRanges.length, "Done");
   return "✅ URL Tracker updated!\n" +
     "Months: "         + resolvedMonthLabels.length + "\n" +
     "URLs processed: " + urls.length + "\n" +
@@ -1158,7 +1272,9 @@ function clearActiveSheetExceptHeader() {
   const sheet   = SpreadsheetApp.getActiveSheet();
   const lastRow = sheet.getLastRow();
   const lastCol = sheet.getLastColumn();
-  if (lastRow > 0 && lastCol > 0) sheet.getRange(1, 1, lastRow, lastCol).clear();
+  if (lastRow > 1 && lastCol > 0) {
+    sheet.getRange(2, 1, lastRow - 1, lastCol).clear();
+  }
 }
 
 function buildTwoRowMonthHeader_(sheet, baseHeaders, months, metricLabels) {
@@ -1189,17 +1305,112 @@ function buildTwoRowMonthHeader_(sheet, baseHeaders, months, metricLabels) {
   sheet.setFrozenRows(2);
 
   sheet.getRange(1, 1, 1, totalCols)
-    .setFontFamily("Arial").setFontWeight("bold")
+    .setFontFamily("Sora").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setBackground("#F1F3F4").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
 
   sheet.getRange(2, 1, 1, totalCols)
-    .setFontFamily("Arial").setFontWeight("bold")
+    .setFontFamily("Sora").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setBackground("#F1F3F4").setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
 
   sheet.setColumnWidth(1, 500);
   for (let c = 2; c <= totalCols; c++) sheet.setColumnWidth(c, 80);
+}
+
+function submitInstantIndex(formData) {
+  const urls   = formData.urls   || [];
+  const action = formData.action || "URL_UPDATED";
+
+  if (!urls.length) throw new Error("No URLs provided.");
+
+  const token    = ScriptApp.getOAuthToken();
+  const endpoint = "https://indexing.googleapis.com/v3/urlNotifications:publish";
+  const tz       = Session.getScriptTimeZone();
+  const now      = Utilities.formatDate(new Date(), tz, "dd MMM yyyy HH:mm");
+
+  const BATCH = 10;
+  const results = [];
+
+  for (let b = 0; b < urls.length; b += BATCH) {
+    const batch = urls.slice(b, Math.min(b + BATCH, urls.length));
+    const requests = batch.map(url => ({
+      url: endpoint,
+      method: "post",
+      contentType: "application/json",
+      headers: { Authorization: "Bearer " + token },
+      payload: JSON.stringify({ url: url.trim(), type: action }),
+      muteHttpExceptions: true
+    }));
+
+    UrlFetchApp.fetchAll(requests).forEach((res, i) => {
+      const pageUrl = batch[i];
+      const code    = res.getResponseCode();
+      let status, note;
+
+      if (code === 200) {
+        status = "✅ Submitted";
+        try {
+          const body = JSON.parse(res.getContentText());
+          note = body.urlNotificationMetadata ? "Queued for crawl" : "OK";
+        } catch(e) { note = "OK"; }
+      } else if (code === 403) {
+        status = "❌ 403 Forbidden";
+        note   = "Service account not added as Owner in GSC for this property.";
+      } else if (code === 429) {
+        status = "⚠️ 429 Quota";
+        note   = "Daily quota of 200 URLs exceeded.";
+      } else if (code === 400) {
+        status = "❌ 400 Bad Request";
+        try { note = JSON.parse(res.getContentText()).error?.message || "Invalid URL or action."; } catch(e) { note = "Invalid URL or action."; }
+      } else {
+        status = "❌ Error " + code;
+        try { note = JSON.parse(res.getContentText()).error?.message || res.getContentText().slice(0, 120); } catch(e) { note = res.getContentText().slice(0, 120); }
+      }
+
+      results.push({ url: pageUrl, status, note, timestamp: now });
+    });
+
+    if (b + BATCH < urls.length) Utilities.sleep(200);
+  }
+
+  const ss     = SpreadsheetApp.getActive();
+  let   sheet  = ss.getSheetByName("Instant Index");
+  if (!sheet) sheet = ss.insertSheet("Instant Index");
+
+  const header = ["URL", "Status", "Note", "Submitted At"];
+  const maxCols = sheet.getMaxColumns();
+  if (maxCols > 4) sheet.deleteColumns(5, maxCols - 4);
+  else if (maxCols < 4) sheet.insertColumnsAfter(maxCols, 4 - maxCols);
+
+  sheet.getRange(1, 1, 1, 4).setValues([header])
+    .setFontWeight("bold").setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setBackground("#f1f3f4");
+  sheet.setFrozenRows(1);
+
+  const existingLastRow = sheet.getLastRow();
+  if (existingLastRow > 1) {
+    sheet.insertRowsAfter(1, results.length);
+  }
+  const writeRow = 2;
+  const rowData  = results.map(r => [r.url, r.status, r.note, r.timestamp]);
+  sheet.getRange(writeRow, 1, rowData.length, 4).setValues(rowData);
+
+  sheet.getRange(writeRow, 1, rowData.length, 1).setFontColor("#0000FF").setHorizontalAlignment("left");
+  sheet.getRange(writeRow, 2, rowData.length, 3).setHorizontalAlignment("center");
+  [550, 160, 380, 140].forEach((w, i) => sheet.setColumnWidth(i + 1, w));
+  sheet.getDataRange().setFontFamily("Sora").setVerticalAlignment("middle");
+
+  results.forEach((r, i) => {
+    const cell = sheet.getRange(writeRow + i, 2);
+    if (r.status.startsWith("✅"))      { cell.setBackground("#d9ead3").setFontColor("#274e13"); }
+    else if (r.status.startsWith("⚠️")) { cell.setBackground("#fff2cc").setFontColor("#7d4e00"); }
+    else                                 { cell.setBackground("#fce8e6").setFontColor("#7f0000"); }
+  });
+
+  const submitted = results.filter(r => r.status.startsWith("✅")).length;
+  const failed    = results.length - submitted;
+  return `✅ Done!\nSubmitted: ${submitted}\nFailed / Skipped: ${failed}\nTotal: ${results.length}\nAction: ${action === "URL_UPDATED" ? "Index" : "Remove"}`;
 }
 
 function parseMonthToDateRange(monthStr) {
@@ -1210,4 +1421,164 @@ function parseMonthToDateRange(monthStr) {
   const tz  = Session.getScriptTimeZone();
   const fmt = d => Utilities.formatDate(d, tz, "yyyy-MM-dd");
   return { startDate: fmt(new Date(year, month - 1, 1)), endDate: fmt(new Date(year, month, 0)), monthLabel: monthStr };
+}
+
+function fetchGscOverviewFromUI(formData) {
+  const siteUrl    = formData.siteUrl;
+  const months     = formData.months || [];
+  const searchType = formData.searchType || "web";
+  const country    = (formData.country || "").toString().trim().toUpperCase();
+  const metrics    = Array.isArray(formData.metrics) ? formData.metrics : ["clicks","impressions","ctr","position"];
+
+  if (!siteUrl)            throw new Error("Select a GSC property.");
+  if (months.length === 0) throw new Error("Select at least one month.");
+
+  const finalFilters = [];
+  if (country) finalFilters.push({ dimension: "country", operator: "equals", expression: country });
+  if (formData.filters && formData.filters.length > 0) finalFilters.push(...formData.filters);
+  const cacheFiltersStr = JSON.stringify(formData.filters || []);
+
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName("Overview");
+  if (!sheet) sheet = ss.insertSheet("Overview");
+  sheet.clear();
+
+  const headerLabels = { clicks: "Clicks", impressions: "Impressions", ctr: "CTR", position: "Avg Position", queries: "Queries" };
+  const headers = ["Month"].concat(metrics.map(m => headerLabels[m] || m));
+
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers])
+    .setFontWeight("bold").setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setBackground("#f1f3f4");
+  sheet.setFrozenRows(1);
+  sheet.getDataRange().setFontFamily("Sora");
+  sheet.setColumnWidth(1, 130);
+  for (let c = 2; c <= headers.length; c++) sheet.setColumnWidth(c, 115);
+
+  const apiUrl = "https://www.googleapis.com/webmasters/v3/sites/" + encodeURIComponent(siteUrl) + "/searchAnalytics/query";
+  const token  = ScriptApp.getOAuthToken();
+  const cache  = CacheService.getDocumentCache();
+  const rows   = [];
+
+  cache.remove("GSC_STOP");
+  setProgress("running", 0, months.length, "Fetching overview");
+
+  months.forEach((m, mi) => {
+    if (cache.get("GSC_STOP") === "1") {
+      cache.remove("GSC_STOP");
+      setProgress("stopped", mi, months.length, "Stopped");
+      throw new Error("Stopped by user.");
+    }
+
+    let startDate, endDate, label;
+    if (m && typeof m === "object" && m.type === "exact") {
+      startDate = m.startDate; endDate = m.endDate; label = m.startDate + " → " + m.endDate;
+    } else {
+      const dr = parseMonthToDateRange(m);
+      startDate = dr.startDate; endDate = dr.endDate; label = m;
+    }
+
+    let clicks = 0, impressions = 0, ctr = 0, position = 0, queries = 0;
+
+    const basePayload = { startDate, endDate, dimensions: [], searchType, rowLimit: 1, dataState: "all" };
+    if (finalFilters.length > 0) basePayload.dimensionFilterGroups = [{ filters: finalFilters }];
+
+    const cacheKey = "GSC_OV_" + [siteUrl, startDate, endDate, searchType, country, cacheFiltersStr].join("|").replace(/[^a-zA-Z0-9]/g, "_").slice(0, 200);
+    const cached = cache.get(cacheKey);
+    if (cached) {
+      try {
+        const c = JSON.parse(cached);
+        clicks = c.clicks; impressions = c.impressions; ctr = c.ctr; position = c.position;
+      } catch(e) {}
+    } else {
+      try {
+        const res = UrlFetchApp.fetch(apiUrl, {
+          method: "post", contentType: "application/json",
+          payload: JSON.stringify(basePayload),
+          headers: { Authorization: "Bearer " + token },
+          muteHttpExceptions: true
+        });
+        if (res.getResponseCode() === 200) {
+          const data = JSON.parse(res.getContentText());
+          if (data.rows && data.rows.length > 0) {
+            const r = data.rows[0];
+            clicks = Number(r.clicks || 0);
+            impressions = Number(r.impressions || 0);
+            ctr = Number(r.ctr || 0);
+            position = Number(r.position || 0);
+          }
+        }
+      } catch(e) {}
+      cache.put(cacheKey, JSON.stringify({ clicks, impressions, ctr, position }), GSC_CACHE_DURATION);
+    }
+
+    if (metrics.indexOf("queries") !== -1) {
+      const qPayload = {
+        startDate, endDate, dimensions: ["query"], searchType,
+        rowLimit: 25000, dataState: "all"
+      };
+      if (finalFilters.length > 0) qPayload.dimensionFilterGroups = [{ filters: finalFilters }];
+
+      const qCacheKey = "GSC_OVQ_" + [siteUrl, startDate, endDate, searchType, country, cacheFiltersStr].join("|").replace(/[^a-zA-Z0-9]/g, "_").slice(0, 200);
+      const qCached = cache.get(qCacheKey);
+      if (qCached) {
+        try { queries = JSON.parse(qCached).queries; } catch(e) {}
+      } else {
+        let qStartRow = 0, qHasMore = true;
+        while (qHasMore) {
+          try {
+            const qRes = UrlFetchApp.fetch(apiUrl, {
+              method: "post", contentType: "application/json",
+              payload: JSON.stringify({ ...qPayload, startRow: qStartRow }),
+              headers: { Authorization: "Bearer " + token },
+              muteHttpExceptions: true
+            });
+            if (qRes.getResponseCode() === 200) {
+              const qData = JSON.parse(qRes.getContentText());
+              const qRows = qData.rows || [];
+              if (!qRows.length) { qHasMore = false; break; }
+              queries += qRows.length;
+              qStartRow += qRows.length;
+              if (qRows.length < qPayload.rowLimit) qHasMore = false;
+            } else { qHasMore = false; }
+          } catch(e) { qHasMore = false; }
+        }
+        cache.put(qCacheKey, JSON.stringify({ queries }), GSC_CACHE_DURATION);
+      }
+    }
+
+    const row = [label];
+    metrics.forEach(metric => {
+      if      (metric === "clicks")      row.push(clicks);
+      else if (metric === "impressions") row.push(impressions);
+      else if (metric === "ctr")         row.push(ctr);
+      else if (metric === "position")    row.push(position);
+      else if (metric === "queries")     row.push(queries);
+      else                               row.push(0);
+    });
+    rows.push(row);
+    setProgress("running", mi + 1, months.length, "Fetching overview");
+  });
+
+  if (rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+    let col = 2;
+    metrics.forEach(metric => {
+      if (metric === "ctr") {
+        sheet.getRange(2, col, rows.length, 1).setNumberFormat("0.00%");
+      } else if (metric === "position") {
+        sheet.getRange(2, col, rows.length, 1).setNumberFormat("0.00");
+      } else {
+        sheet.getRange(2, col, rows.length, 1).setNumberFormat("#,##0");
+      }
+      col++;
+    });
+    sheet.getRange(2, 1, rows.length, 1).setHorizontalAlignment("left");
+    sheet.getRange(2, 2, rows.length, metrics.length).setHorizontalAlignment("center");
+  }
+
+  setProgress("done", months.length, months.length, "Done");
+  return "✅ Overview updated!\nMonths: " + months.length +
+    "\nMetrics: " + metrics.map(m => headerLabels[m] || m).join(", ") +
+    "\nSearch type: " + searchType +
+    "\nCountry: " + (country || "All");
 }
